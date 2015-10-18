@@ -5,6 +5,7 @@
 #include <cstring>
 #include <ostream>
 #include <cassert>
+#include <type_traits>
 //---------------------------------------------------------------------------
 // HyPer
 // (c) Thomas Neumann 2010
@@ -254,6 +255,8 @@ static constexpr uint64_t numericShifts[19]={1ull,10ull,100ull,1000ull,10000ull,
 template <unsigned len,unsigned precision> class Numeric
 {
 public:
+  static_assert(precision + len < 19, "Numeric supports at most 19 digits");
+
    /// The value
    int64_t value;
 
@@ -262,6 +265,20 @@ public:
    Numeric() : value(0) {}
    Numeric(Integer x) : value(x.value*numericShifts[precision]) {}
    Numeric(int64_t x) : value(x) {}
+
+   // copy construction
+   /// implicit copy construction if both length and precision are increased
+   template <unsigned l2,unsigned p2, typename std::enable_if<(l2 <= len && p2 <= precision)>::type* = nullptr>
+   Numeric(const Numeric<l2, p2>& rhs) : value(rhs.value*numericShifts[precision-p2]) {}
+   /// explicit copy constructor if either length or precision are decreased
+   template <unsigned l2,unsigned p2, typename std::enable_if<!(l2 <= len && p2 <= precision)>::type* = nullptr>
+   explicit Numeric(const Numeric<l2, p2>& rhs) {
+     if(p2 < precision) {
+       value = rhs.value*numericShifts[precision-p2];
+     } else {
+       value = rhs.value/numericShifts[p2-precision];
+     }
+   }
 
    /// Assign a value
    void assignRaw(long v) { value=v; }
@@ -303,16 +320,6 @@ public:
    /// Neg
    Numeric operator-() { Numeric n; n.value=-value; return n; }
 
-   /// Cast
-   template <unsigned l> Numeric<l,precision> castS() const { Numeric<l,precision> r; r.value=value; return r; }
-   /// Cast
-   template <unsigned l> Numeric<l,precision+1> castP1() const { Numeric<l,precision+1> r; r.value=value*10; return r; }
-   /// Cast
-   Numeric<len,precision+2> castP2() const { Numeric<len,precision+2> r; r.value=value*100; return r; }
-   /// Cast
-   template <unsigned l> Numeric<l,precision-1> castM1() const { Numeric<l,precision-1> r; r.value=value/10; return r; }
-   /// Cast
-   template <unsigned l> Numeric<l,precision-2> castM2() const { Numeric<l,precision-2> r; r.value=value/100; return r; }
    /// Build a number
    static Numeric<len,precision> buildRaw(long v) { Numeric r; r.value=v; return r; }
    /// Cast
