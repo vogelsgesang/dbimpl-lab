@@ -7,7 +7,7 @@
 #   make test   - runs the test cases
 
 CPPFLAGS = -I . -isystem lib/gtest-1.7.0/include
-CXXFLAGS =-std=c++11 -Wall -Werror -pedantic -fno-rtti
+CXXFLAGS =-std=c++14 -Wall -Werror -pedantic -Wno-unused-function -fno-rtti
 LDFLAGS  =-Wall -Werror -pthread
 LDLIBS   =-lm
 
@@ -48,7 +48,8 @@ clean:
 # the actual binaries
 #####################
 
-RUNTESTS_OBJS=gtest_main.a $(patsubst %.cpp, %.o, $(shell find tests/ -iname *Test.cpp -type f))
+RUNTESTS_OBJS=gtest_main.a $(patsubst %.cpp, %.o, $(shell find tests/ -iname *Test.cpp -type f)) \
+							task1/Types.o
 bin/runTests$(BIN_SUFFIX): CPPFLAGS+= -isystem $(GTEST_DIR)/include
 #the dependency on the _directory_ containing the test specifications is neccessary in
 #order to handle deleted files correctly
