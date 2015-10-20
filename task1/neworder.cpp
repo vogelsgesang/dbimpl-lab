@@ -61,8 +61,9 @@ void newOrder (int32_t w_id, int32_t d_id, int32_t c_id, int32_t items, int32_t 
       throw "stock entry not found";
     }
     auto s_quantity = (*stock_iter).s_quantity();
-    auto s_remote_cnt = (*stock_iter).s_remote_cnt();
-    auto s_order_cnt = (*stock_iter).s_order_cnt();
+    //These two variables are defined in the original SQL script but are actually unused. No idea, why..
+    //auto s_remote_cnt = (*stock_iter).s_remote_cnt();
+    //auto s_order_cnt = (*stock_iter).s_order_cnt();
     Char<24> s_dist;
     switch (d_id) {
       case  1: s_dist = (*stock_iter).s_dist_01(); break;
