@@ -3,7 +3,9 @@
 
 #include <vector>
 #include <tuple>
-#include "task1/Types.hpp"
+#include <fstream>
+#include <iterator>
+#include "Types.hpp"
 
 //---------------------------------------------------------------------------
 // internal template magic
@@ -65,12 +67,20 @@ namespace detail {
 //---------------------------------------------------------------------------
 
 //---------------------------------------------------------------------------
-//parses a complete table and returns its contents
-template<typename TableType, typename IterT>
-TableType parseTbl (const IterT begin, const IterT end) {
-  TableType table;
+//parses a complete table into a and returns its contents
+template<typename StorageType, typename IterT>
+StorageType parseTbl (const IterT begin, const IterT end) {
+  StorageType table;
   detail::parseTbl(begin, end, table);
   return table;
+}
+//reads a table from disk
+template<typename TableType>
+void loadTblFromFile (TableType* dest, const char* filename) {
+  std::fstream file(filename);
+  std::istream_iterator<char> eos;
+  std::istream_iterator<char> instream(file);
+  dest->data = parseTbl<typename TableType::storage_type>(instream, eos);
 }
 //---------------------------------------------------------------------------
 #endif
