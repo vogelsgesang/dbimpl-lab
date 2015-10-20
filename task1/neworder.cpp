@@ -2,15 +2,6 @@
 #include <algorithm>
 #include "Schema.hpp"
 
-extern warehouse_t warehouse;
-extern customer_t customer;
-extern district_t district;
-extern order_t order;
-extern neworder_t neworder;
-extern item_t item;
-extern stock_t stock;
-extern orderline_t orderline;
-
 void newOrder (int32_t w_id, int32_t d_id, int32_t c_id, int32_t items, int32_t supware[15], int32_t itemid[15], int32_t qty[15], Timestamp datetime) {
   // select w_tax from warehouse w where w.w_id=w_id;
   auto warehouse_iter = std::find_if(warehouse.begin(), warehouse.end(), [=](auto& row){return row.w_id == w_id;});

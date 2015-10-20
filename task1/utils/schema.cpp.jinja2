@@ -5,13 +5,12 @@
 #include "Types.hpp"
 //-----------------------------------------------------------------------------
 {% for table in schema -%}
-class {{table.name}}_t {
-  public:
-    typedef std::tuple<
-      {%- for column in table.columns %}
-      std::vector<{{column.type | translate_type}}>{{"," if not loop.last else ""}} //{{column.name}}
-      {%- endfor %}
-    > table_type;
+struct {{table.name}}_t {
+  typedef std::tuple<
+    {%- for column in table.columns %}
+    std::vector<{{column.type | translate_type}}>{{"," if not loop.last else ""}} //{{column.name}}
+    {%- endfor %}
+  > table_type;
 
   auto size() {return std::get<0>(data).size();}
 
@@ -57,9 +56,12 @@ class {{table.name}}_t {
   auto begin() {return iterator{data, 0};}
   auto end() {return iterator{data, size()};}
 
-  private:
-    table_type data;
+  table_type data;
 };
 //-----------------------------------------------------------------------------
 {% endfor -%}
+{% for table in schema -%}
+{{table.name}}_t {{table.name}};
+{% endfor -%}
+//-----------------------------------------------------------------------------
 #endif

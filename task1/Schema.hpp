@@ -4,19 +4,18 @@
 #include <tuple>
 #include "Types.hpp"
 //-----------------------------------------------------------------------------
-class warehouse_t {
-  public:
-    typedef std::tuple<
-      std::vector<Integer>, //w_id
-      std::vector<Varchar<10>>, //w_name
-      std::vector<Varchar<20>>, //w_street_1
-      std::vector<Varchar<20>>, //w_street_2
-      std::vector<Varchar<20>>, //w_city
-      std::vector<Char<2>>, //w_state
-      std::vector<Char<9>>, //w_zip
-      std::vector<Numeric<4,4>>, //w_tax
-      std::vector<Numeric<12,2>> //w_ytd
-    > table_type;
+struct warehouse_t {
+  typedef std::tuple<
+    std::vector<Integer>, //w_id
+    std::vector<Varchar<10>>, //w_name
+    std::vector<Varchar<20>>, //w_street_1
+    std::vector<Varchar<20>>, //w_street_2
+    std::vector<Varchar<20>>, //w_city
+    std::vector<Char<2>>, //w_state
+    std::vector<Char<9>>, //w_zip
+    std::vector<Numeric<4,4>>, //w_tax
+    std::vector<Numeric<12,2>> //w_ytd
+  > table_type;
 
   auto size() {return std::get<0>(data).size();}
 
@@ -92,25 +91,23 @@ class warehouse_t {
   auto begin() {return iterator{data, 0};}
   auto end() {return iterator{data, size()};}
 
-  private:
-    table_type data;
+  table_type data;
 };
 //-----------------------------------------------------------------------------
-class district_t {
-  public:
-    typedef std::tuple<
-      std::vector<Integer>, //d_id
-      std::vector<Integer>, //d_w_id
-      std::vector<Varchar<10>>, //d_name
-      std::vector<Varchar<20>>, //d_street_1
-      std::vector<Varchar<20>>, //d_street_2
-      std::vector<Varchar<20>>, //d_city
-      std::vector<Char<2>>, //d_state
-      std::vector<Char<9>>, //d_zip
-      std::vector<Numeric<4,4>>, //d_tax
-      std::vector<Numeric<12,2>>, //d_ytd
-      std::vector<Integer> //d_next_o_id
-    > table_type;
+struct district_t {
+  typedef std::tuple<
+    std::vector<Integer>, //d_id
+    std::vector<Integer>, //d_w_id
+    std::vector<Varchar<10>>, //d_name
+    std::vector<Varchar<20>>, //d_street_1
+    std::vector<Varchar<20>>, //d_street_2
+    std::vector<Varchar<20>>, //d_city
+    std::vector<Char<2>>, //d_state
+    std::vector<Char<9>>, //d_zip
+    std::vector<Numeric<4,4>>, //d_tax
+    std::vector<Numeric<12,2>>, //d_ytd
+    std::vector<Integer> //d_next_o_id
+  > table_type;
 
   auto size() {return std::get<0>(data).size();}
 
@@ -194,35 +191,33 @@ class district_t {
   auto begin() {return iterator{data, 0};}
   auto end() {return iterator{data, size()};}
 
-  private:
-    table_type data;
+  table_type data;
 };
 //-----------------------------------------------------------------------------
-class customer_t {
-  public:
-    typedef std::tuple<
-      std::vector<Integer>, //c_id
-      std::vector<Integer>, //c_d_id
-      std::vector<Integer>, //c_w_id
-      std::vector<Varchar<16>>, //c_first
-      std::vector<Char<2>>, //c_middle
-      std::vector<Varchar<16>>, //c_last
-      std::vector<Varchar<20>>, //c_street_1
-      std::vector<Varchar<20>>, //c_street_2
-      std::vector<Varchar<20>>, //c_city
-      std::vector<Char<2>>, //c_state
-      std::vector<Char<9>>, //c_zip
-      std::vector<Char<16>>, //c_phone
-      std::vector<Timestamp>, //c_since
-      std::vector<Char<2>>, //c_credit
-      std::vector<Numeric<12,2>>, //c_credit_lim
-      std::vector<Numeric<4,4>>, //c_discount
-      std::vector<Numeric<12,2>>, //c_balance
-      std::vector<Numeric<12,2>>, //c_ytd_paymenr
-      std::vector<Numeric<4,0>>, //c_payment_cnt
-      std::vector<Numeric<4,0>>, //c_delivery_cnt
-      std::vector<Varchar<500>> //c_data
-    > table_type;
+struct customer_t {
+  typedef std::tuple<
+    std::vector<Integer>, //c_id
+    std::vector<Integer>, //c_d_id
+    std::vector<Integer>, //c_w_id
+    std::vector<Varchar<16>>, //c_first
+    std::vector<Char<2>>, //c_middle
+    std::vector<Varchar<16>>, //c_last
+    std::vector<Varchar<20>>, //c_street_1
+    std::vector<Varchar<20>>, //c_street_2
+    std::vector<Varchar<20>>, //c_city
+    std::vector<Char<2>>, //c_state
+    std::vector<Char<9>>, //c_zip
+    std::vector<Char<16>>, //c_phone
+    std::vector<Timestamp>, //c_since
+    std::vector<Char<2>>, //c_credit
+    std::vector<Numeric<12,2>>, //c_credit_lim
+    std::vector<Numeric<4,4>>, //c_discount
+    std::vector<Numeric<12,2>>, //c_balance
+    std::vector<Numeric<12,2>>, //c_ytd_paymenr
+    std::vector<Numeric<4,0>>, //c_payment_cnt
+    std::vector<Numeric<4,0>>, //c_delivery_cnt
+    std::vector<Varchar<500>> //c_data
+  > table_type;
 
   auto size() {return std::get<0>(data).size();}
 
@@ -346,22 +341,20 @@ class customer_t {
   auto begin() {return iterator{data, 0};}
   auto end() {return iterator{data, size()};}
 
-  private:
-    table_type data;
+  table_type data;
 };
 //-----------------------------------------------------------------------------
-class history_t {
-  public:
-    typedef std::tuple<
-      std::vector<Integer>, //h_c_id
-      std::vector<Integer>, //h_c_d_id
-      std::vector<Integer>, //h_c_w_id
-      std::vector<Integer>, //h_d_id
-      std::vector<Integer>, //h_w_id
-      std::vector<Timestamp>, //h_date
-      std::vector<Numeric<6,2>>, //h_amount
-      std::vector<Varchar<24>> //h_data
-    > table_type;
+struct history_t {
+  typedef std::tuple<
+    std::vector<Integer>, //h_c_id
+    std::vector<Integer>, //h_c_d_id
+    std::vector<Integer>, //h_c_w_id
+    std::vector<Integer>, //h_d_id
+    std::vector<Integer>, //h_w_id
+    std::vector<Timestamp>, //h_date
+    std::vector<Numeric<6,2>>, //h_amount
+    std::vector<Varchar<24>> //h_data
+  > table_type;
 
   auto size() {return std::get<0>(data).size();}
 
@@ -433,17 +426,15 @@ class history_t {
   auto begin() {return iterator{data, 0};}
   auto end() {return iterator{data, size()};}
 
-  private:
-    table_type data;
+  table_type data;
 };
 //-----------------------------------------------------------------------------
-class neworder_t {
-  public:
-    typedef std::tuple<
-      std::vector<Integer>, //no_o_id
-      std::vector<Integer>, //no_d_id
-      std::vector<Integer> //no_w_id
-    > table_type;
+struct neworder_t {
+  typedef std::tuple<
+    std::vector<Integer>, //no_o_id
+    std::vector<Integer>, //no_d_id
+    std::vector<Integer> //no_w_id
+  > table_type;
 
   auto size() {return std::get<0>(data).size();}
 
@@ -495,22 +486,20 @@ class neworder_t {
   auto begin() {return iterator{data, 0};}
   auto end() {return iterator{data, size()};}
 
-  private:
-    table_type data;
+  table_type data;
 };
 //-----------------------------------------------------------------------------
-class order_t {
-  public:
-    typedef std::tuple<
-      std::vector<Integer>, //o_id
-      std::vector<Integer>, //o_d_id
-      std::vector<Integer>, //o_w_id
-      std::vector<Integer>, //o_c_id
-      std::vector<Timestamp>, //o_entry_d
-      std::vector<Integer>, //o_carrier_id
-      std::vector<Numeric<2,0>>, //o_ol_cnt
-      std::vector<Numeric<1,0>> //o_all_local
-    > table_type;
+struct order_t {
+  typedef std::tuple<
+    std::vector<Integer>, //o_id
+    std::vector<Integer>, //o_d_id
+    std::vector<Integer>, //o_w_id
+    std::vector<Integer>, //o_c_id
+    std::vector<Timestamp>, //o_entry_d
+    std::vector<Integer>, //o_carrier_id
+    std::vector<Numeric<2,0>>, //o_ol_cnt
+    std::vector<Numeric<1,0>> //o_all_local
+  > table_type;
 
   auto size() {return std::get<0>(data).size();}
 
@@ -582,24 +571,22 @@ class order_t {
   auto begin() {return iterator{data, 0};}
   auto end() {return iterator{data, size()};}
 
-  private:
-    table_type data;
+  table_type data;
 };
 //-----------------------------------------------------------------------------
-class orderline_t {
-  public:
-    typedef std::tuple<
-      std::vector<Integer>, //ol_o_id
-      std::vector<Integer>, //ol_d_id
-      std::vector<Integer>, //ol_w_id
-      std::vector<Integer>, //ol_number
-      std::vector<Integer>, //ol_i_id
-      std::vector<Integer>, //ol_supply_w_id
-      std::vector<Timestamp>, //ol_delivery_d
-      std::vector<Numeric<2,0>>, //ol_quantity
-      std::vector<Numeric<6,2>>, //ol_amount
-      std::vector<Char<24>> //ol_dist_info
-    > table_type;
+struct orderline_t {
+  typedef std::tuple<
+    std::vector<Integer>, //ol_o_id
+    std::vector<Integer>, //ol_d_id
+    std::vector<Integer>, //ol_w_id
+    std::vector<Integer>, //ol_number
+    std::vector<Integer>, //ol_i_id
+    std::vector<Integer>, //ol_supply_w_id
+    std::vector<Timestamp>, //ol_delivery_d
+    std::vector<Numeric<2,0>>, //ol_quantity
+    std::vector<Numeric<6,2>>, //ol_amount
+    std::vector<Char<24>> //ol_dist_info
+  > table_type;
 
   auto size() {return std::get<0>(data).size();}
 
@@ -679,19 +666,17 @@ class orderline_t {
   auto begin() {return iterator{data, 0};}
   auto end() {return iterator{data, size()};}
 
-  private:
-    table_type data;
+  table_type data;
 };
 //-----------------------------------------------------------------------------
-class item_t {
-  public:
-    typedef std::tuple<
-      std::vector<Integer>, //i_id
-      std::vector<Integer>, //i_im_id
-      std::vector<Varchar<24>>, //i_name
-      std::vector<Numeric<5,2>>, //i_price
-      std::vector<Varchar<50>> //i_data
-    > table_type;
+struct item_t {
+  typedef std::tuple<
+    std::vector<Integer>, //i_id
+    std::vector<Integer>, //i_im_id
+    std::vector<Varchar<24>>, //i_name
+    std::vector<Numeric<5,2>>, //i_price
+    std::vector<Varchar<50>> //i_data
+  > table_type;
 
   auto size() {return std::get<0>(data).size();}
 
@@ -751,31 +736,29 @@ class item_t {
   auto begin() {return iterator{data, 0};}
   auto end() {return iterator{data, size()};}
 
-  private:
-    table_type data;
+  table_type data;
 };
 //-----------------------------------------------------------------------------
-class stock_t {
-  public:
-    typedef std::tuple<
-      std::vector<Integer>, //s_i_id
-      std::vector<Integer>, //s_w_id
-      std::vector<Numeric<4,0>>, //s_quantity
-      std::vector<Char<24>>, //s_dist_01
-      std::vector<Char<24>>, //s_dist_02
-      std::vector<Char<24>>, //s_dist_03
-      std::vector<Char<24>>, //s_dist_04
-      std::vector<Char<24>>, //s_dist_05
-      std::vector<Char<24>>, //s_dist_06
-      std::vector<Char<24>>, //s_dist_07
-      std::vector<Char<24>>, //s_dist_08
-      std::vector<Char<24>>, //s_dist_09
-      std::vector<Char<24>>, //s_dist_10
-      std::vector<Numeric<8,0>>, //s_ytd
-      std::vector<Numeric<4,0>>, //s_order_cnt
-      std::vector<Numeric<4,0>>, //s_remote_cnt
-      std::vector<Varchar<50>> //s_data
-    > table_type;
+struct stock_t {
+  typedef std::tuple<
+    std::vector<Integer>, //s_i_id
+    std::vector<Integer>, //s_w_id
+    std::vector<Numeric<4,0>>, //s_quantity
+    std::vector<Char<24>>, //s_dist_01
+    std::vector<Char<24>>, //s_dist_02
+    std::vector<Char<24>>, //s_dist_03
+    std::vector<Char<24>>, //s_dist_04
+    std::vector<Char<24>>, //s_dist_05
+    std::vector<Char<24>>, //s_dist_06
+    std::vector<Char<24>>, //s_dist_07
+    std::vector<Char<24>>, //s_dist_08
+    std::vector<Char<24>>, //s_dist_09
+    std::vector<Char<24>>, //s_dist_10
+    std::vector<Numeric<8,0>>, //s_ytd
+    std::vector<Numeric<4,0>>, //s_order_cnt
+    std::vector<Numeric<4,0>>, //s_remote_cnt
+    std::vector<Varchar<50>> //s_data
+  > table_type;
 
   auto size() {return std::get<0>(data).size();}
 
@@ -883,8 +866,17 @@ class stock_t {
   auto begin() {return iterator{data, 0};}
   auto end() {return iterator{data, size()};}
 
-  private:
-    table_type data;
+  table_type data;
 };
+//-----------------------------------------------------------------------------
+warehouse_t warehouse;
+district_t district;
+customer_t customer;
+history_t history;
+neworder_t neworder;
+order_t order;
+orderline_t orderline;
+item_t item;
+stock_t stock;
 //-----------------------------------------------------------------------------
 #endif
