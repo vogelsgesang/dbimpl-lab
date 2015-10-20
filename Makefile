@@ -32,7 +32,7 @@ endif
 OBJ_DIR=build/$(BUILD_TYPE)
 
 .PHONY: all
-all: $(addsuffix $(BIN_SUFFIX), bin/runTests)
+all: $(addsuffix $(BIN_SUFFIX), bin/runTests bin/task1)
 
 .PHONY: test
 test: all
@@ -47,6 +47,12 @@ clean:
 #####################
 # the actual binaries
 #####################
+
+TASK1_OBJS=task1/main.o task1/neworderrandom.o task1/neworder.o task1/Types.o
+bin/task1$(BIN_SUFFIX):
+bin/runTests$(BIN_SUFFIX): $(addprefix $(OBJ_DIR)/, $(TASK1_OBJS))
+	@mkdir -p $(dir $@)
+	$(CXX) $(LDFLAGS) $(filter-out tests, $^) $(LDLIBS) -o $@
 
 RUNTESTS_OBJS=gtest_main.a $(patsubst %.cpp, %.o, $(shell find tests/ -iname *Test.cpp -type f)) \
 							task1/Types.o
