@@ -99,7 +99,7 @@ void newOrder (int32_t w_id, int32_t d_id, int32_t c_id, int32_t items, int32_t 
     }
 
     // var numeric(6,2) ol_amount=qty[index]*i_price*(1.0+w_tax+d_tax)*(1.0-c_discount);
-    Numeric<6,2> ol_amount = Numeric<5,4>{i_price}*Numeric<5,4>{qty[index]}*Numeric<4,4>{i_price}*(Numeric<4,4>(10000)-c_discount) * (Numeric<4,4>(10000)+w_tax+d_tax);
+    auto ol_amount = Numeric<6,2>{Numeric<6,2>{qty[index]}*Numeric<6,2>{i_price}*Numeric<6,4>{(Numeric<4,4>(10000)-c_discount) * (Numeric<4,4>(10000)+w_tax+d_tax)}};
     // insert into orderline values (o_id,d_id,w_id,index+1,itemid[index],supware[index],0,qty[index],ol_amount,s_dist);
     orderline.ol_o_id()       .push_back(o_id);
     orderline.ol_d_id()       .push_back(d_id);
