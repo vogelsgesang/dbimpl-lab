@@ -10,7 +10,7 @@ struct {{table.name}}_t {
     {%- for column in table.columns %}
     std::vector<{{column.type | translate_type}}>{{"," if not loop.last else ""}} //{{column.name}}
     {%- endfor %}
-  > table_type;
+  > storage_type;
 
   auto size() {return std::get<0>(data).size();}
 
@@ -21,20 +21,20 @@ struct {{table.name}}_t {
 
   class dereferenced_iterator {
     public:
-      dereferenced_iterator(table_type &data, size_t offset) : data(data), offset(offset) {}
+      dereferenced_iterator(storage_type &data, size_t offset) : data(data), offset(offset) {}
 
       {% for column in table.columns -%}
       auto& {{column.name}}() { return std::get<{{loop.index0}}>(data)[offset]; }
       const auto& {{column.name}}() const { return std::get<{{loop.index0}}>(data)[offset]; }
       {% endfor %}
     private:
-      table_type &data;
+      storage_type &data;
       size_t offset;
   };
 
   class iterator {
     public:
-      iterator(table_type &data, size_t offset) : data(data), offset(offset) {}
+      iterator(storage_type &data, size_t offset) : data(data), offset(offset) {}
 
       iterator& operator++() {++offset; return *this;}
       iterator operator++(int) {auto copy = *this; offset++; return copy;}
@@ -49,14 +49,14 @@ struct {{table.name}}_t {
       auto operator*() { return dereferenced_iterator{data, offset}; }
 
     private:
-      table_type &data;
+      storage_type &data;
       size_t offset;
   };
 
   auto begin() {return iterator{data, 0};}
   auto end() {return iterator{data, size()};}
 
-  table_type data;
+  storage_type data;
 };
 //-----------------------------------------------------------------------------
 {% endfor -%}

@@ -15,7 +15,7 @@ struct warehouse_t {
     std::vector<Char<9>>, //w_zip
     std::vector<Numeric<4,4>>, //w_tax
     std::vector<Numeric<12,2>> //w_ytd
-  > table_type;
+  > storage_type;
 
   auto size() {return std::get<0>(data).size();}
 
@@ -41,7 +41,7 @@ struct warehouse_t {
 
   class dereferenced_iterator {
     public:
-      dereferenced_iterator(table_type &data, size_t offset) : data(data), offset(offset) {}
+      dereferenced_iterator(storage_type &data, size_t offset) : data(data), offset(offset) {}
 
       auto& w_id() { return std::get<0>(data)[offset]; }
       const auto& w_id() const { return std::get<0>(data)[offset]; }
@@ -63,13 +63,13 @@ struct warehouse_t {
       const auto& w_ytd() const { return std::get<8>(data)[offset]; }
       
     private:
-      table_type &data;
+      storage_type &data;
       size_t offset;
   };
 
   class iterator {
     public:
-      iterator(table_type &data, size_t offset) : data(data), offset(offset) {}
+      iterator(storage_type &data, size_t offset) : data(data), offset(offset) {}
 
       iterator& operator++() {++offset; return *this;}
       iterator operator++(int) {auto copy = *this; offset++; return copy;}
@@ -84,14 +84,14 @@ struct warehouse_t {
       auto operator*() { return dereferenced_iterator{data, offset}; }
 
     private:
-      table_type &data;
+      storage_type &data;
       size_t offset;
   };
 
   auto begin() {return iterator{data, 0};}
   auto end() {return iterator{data, size()};}
 
-  table_type data;
+  storage_type data;
 };
 //-----------------------------------------------------------------------------
 struct district_t {
@@ -107,7 +107,7 @@ struct district_t {
     std::vector<Numeric<4,4>>, //d_tax
     std::vector<Numeric<12,2>>, //d_ytd
     std::vector<Integer> //d_next_o_id
-  > table_type;
+  > storage_type;
 
   auto size() {return std::get<0>(data).size();}
 
@@ -137,7 +137,7 @@ struct district_t {
 
   class dereferenced_iterator {
     public:
-      dereferenced_iterator(table_type &data, size_t offset) : data(data), offset(offset) {}
+      dereferenced_iterator(storage_type &data, size_t offset) : data(data), offset(offset) {}
 
       auto& d_id() { return std::get<0>(data)[offset]; }
       const auto& d_id() const { return std::get<0>(data)[offset]; }
@@ -163,13 +163,13 @@ struct district_t {
       const auto& d_next_o_id() const { return std::get<10>(data)[offset]; }
       
     private:
-      table_type &data;
+      storage_type &data;
       size_t offset;
   };
 
   class iterator {
     public:
-      iterator(table_type &data, size_t offset) : data(data), offset(offset) {}
+      iterator(storage_type &data, size_t offset) : data(data), offset(offset) {}
 
       iterator& operator++() {++offset; return *this;}
       iterator operator++(int) {auto copy = *this; offset++; return copy;}
@@ -184,14 +184,14 @@ struct district_t {
       auto operator*() { return dereferenced_iterator{data, offset}; }
 
     private:
-      table_type &data;
+      storage_type &data;
       size_t offset;
   };
 
   auto begin() {return iterator{data, 0};}
   auto end() {return iterator{data, size()};}
 
-  table_type data;
+  storage_type data;
 };
 //-----------------------------------------------------------------------------
 struct customer_t {
@@ -217,7 +217,7 @@ struct customer_t {
     std::vector<Numeric<4,0>>, //c_payment_cnt
     std::vector<Numeric<4,0>>, //c_delivery_cnt
     std::vector<Varchar<500>> //c_data
-  > table_type;
+  > storage_type;
 
   auto size() {return std::get<0>(data).size();}
 
@@ -267,7 +267,7 @@ struct customer_t {
 
   class dereferenced_iterator {
     public:
-      dereferenced_iterator(table_type &data, size_t offset) : data(data), offset(offset) {}
+      dereferenced_iterator(storage_type &data, size_t offset) : data(data), offset(offset) {}
 
       auto& c_id() { return std::get<0>(data)[offset]; }
       const auto& c_id() const { return std::get<0>(data)[offset]; }
@@ -313,13 +313,13 @@ struct customer_t {
       const auto& c_data() const { return std::get<20>(data)[offset]; }
       
     private:
-      table_type &data;
+      storage_type &data;
       size_t offset;
   };
 
   class iterator {
     public:
-      iterator(table_type &data, size_t offset) : data(data), offset(offset) {}
+      iterator(storage_type &data, size_t offset) : data(data), offset(offset) {}
 
       iterator& operator++() {++offset; return *this;}
       iterator operator++(int) {auto copy = *this; offset++; return copy;}
@@ -334,14 +334,14 @@ struct customer_t {
       auto operator*() { return dereferenced_iterator{data, offset}; }
 
     private:
-      table_type &data;
+      storage_type &data;
       size_t offset;
   };
 
   auto begin() {return iterator{data, 0};}
   auto end() {return iterator{data, size()};}
 
-  table_type data;
+  storage_type data;
 };
 //-----------------------------------------------------------------------------
 struct history_t {
@@ -354,7 +354,7 @@ struct history_t {
     std::vector<Timestamp>, //h_date
     std::vector<Numeric<6,2>>, //h_amount
     std::vector<Varchar<24>> //h_data
-  > table_type;
+  > storage_type;
 
   auto size() {return std::get<0>(data).size();}
 
@@ -378,7 +378,7 @@ struct history_t {
 
   class dereferenced_iterator {
     public:
-      dereferenced_iterator(table_type &data, size_t offset) : data(data), offset(offset) {}
+      dereferenced_iterator(storage_type &data, size_t offset) : data(data), offset(offset) {}
 
       auto& h_c_id() { return std::get<0>(data)[offset]; }
       const auto& h_c_id() const { return std::get<0>(data)[offset]; }
@@ -398,13 +398,13 @@ struct history_t {
       const auto& h_data() const { return std::get<7>(data)[offset]; }
       
     private:
-      table_type &data;
+      storage_type &data;
       size_t offset;
   };
 
   class iterator {
     public:
-      iterator(table_type &data, size_t offset) : data(data), offset(offset) {}
+      iterator(storage_type &data, size_t offset) : data(data), offset(offset) {}
 
       iterator& operator++() {++offset; return *this;}
       iterator operator++(int) {auto copy = *this; offset++; return copy;}
@@ -419,14 +419,14 @@ struct history_t {
       auto operator*() { return dereferenced_iterator{data, offset}; }
 
     private:
-      table_type &data;
+      storage_type &data;
       size_t offset;
   };
 
   auto begin() {return iterator{data, 0};}
   auto end() {return iterator{data, size()};}
 
-  table_type data;
+  storage_type data;
 };
 //-----------------------------------------------------------------------------
 struct neworder_t {
@@ -434,7 +434,7 @@ struct neworder_t {
     std::vector<Integer>, //no_o_id
     std::vector<Integer>, //no_d_id
     std::vector<Integer> //no_w_id
-  > table_type;
+  > storage_type;
 
   auto size() {return std::get<0>(data).size();}
 
@@ -448,7 +448,7 @@ struct neworder_t {
 
   class dereferenced_iterator {
     public:
-      dereferenced_iterator(table_type &data, size_t offset) : data(data), offset(offset) {}
+      dereferenced_iterator(storage_type &data, size_t offset) : data(data), offset(offset) {}
 
       auto& no_o_id() { return std::get<0>(data)[offset]; }
       const auto& no_o_id() const { return std::get<0>(data)[offset]; }
@@ -458,13 +458,13 @@ struct neworder_t {
       const auto& no_w_id() const { return std::get<2>(data)[offset]; }
       
     private:
-      table_type &data;
+      storage_type &data;
       size_t offset;
   };
 
   class iterator {
     public:
-      iterator(table_type &data, size_t offset) : data(data), offset(offset) {}
+      iterator(storage_type &data, size_t offset) : data(data), offset(offset) {}
 
       iterator& operator++() {++offset; return *this;}
       iterator operator++(int) {auto copy = *this; offset++; return copy;}
@@ -479,14 +479,14 @@ struct neworder_t {
       auto operator*() { return dereferenced_iterator{data, offset}; }
 
     private:
-      table_type &data;
+      storage_type &data;
       size_t offset;
   };
 
   auto begin() {return iterator{data, 0};}
   auto end() {return iterator{data, size()};}
 
-  table_type data;
+  storage_type data;
 };
 //-----------------------------------------------------------------------------
 struct order_t {
@@ -499,7 +499,7 @@ struct order_t {
     std::vector<Integer>, //o_carrier_id
     std::vector<Numeric<2,0>>, //o_ol_cnt
     std::vector<Numeric<1,0>> //o_all_local
-  > table_type;
+  > storage_type;
 
   auto size() {return std::get<0>(data).size();}
 
@@ -523,7 +523,7 @@ struct order_t {
 
   class dereferenced_iterator {
     public:
-      dereferenced_iterator(table_type &data, size_t offset) : data(data), offset(offset) {}
+      dereferenced_iterator(storage_type &data, size_t offset) : data(data), offset(offset) {}
 
       auto& o_id() { return std::get<0>(data)[offset]; }
       const auto& o_id() const { return std::get<0>(data)[offset]; }
@@ -543,13 +543,13 @@ struct order_t {
       const auto& o_all_local() const { return std::get<7>(data)[offset]; }
       
     private:
-      table_type &data;
+      storage_type &data;
       size_t offset;
   };
 
   class iterator {
     public:
-      iterator(table_type &data, size_t offset) : data(data), offset(offset) {}
+      iterator(storage_type &data, size_t offset) : data(data), offset(offset) {}
 
       iterator& operator++() {++offset; return *this;}
       iterator operator++(int) {auto copy = *this; offset++; return copy;}
@@ -564,14 +564,14 @@ struct order_t {
       auto operator*() { return dereferenced_iterator{data, offset}; }
 
     private:
-      table_type &data;
+      storage_type &data;
       size_t offset;
   };
 
   auto begin() {return iterator{data, 0};}
   auto end() {return iterator{data, size()};}
 
-  table_type data;
+  storage_type data;
 };
 //-----------------------------------------------------------------------------
 struct orderline_t {
@@ -586,7 +586,7 @@ struct orderline_t {
     std::vector<Numeric<2,0>>, //ol_quantity
     std::vector<Numeric<6,2>>, //ol_amount
     std::vector<Char<24>> //ol_dist_info
-  > table_type;
+  > storage_type;
 
   auto size() {return std::get<0>(data).size();}
 
@@ -614,7 +614,7 @@ struct orderline_t {
 
   class dereferenced_iterator {
     public:
-      dereferenced_iterator(table_type &data, size_t offset) : data(data), offset(offset) {}
+      dereferenced_iterator(storage_type &data, size_t offset) : data(data), offset(offset) {}
 
       auto& ol_o_id() { return std::get<0>(data)[offset]; }
       const auto& ol_o_id() const { return std::get<0>(data)[offset]; }
@@ -638,13 +638,13 @@ struct orderline_t {
       const auto& ol_dist_info() const { return std::get<9>(data)[offset]; }
       
     private:
-      table_type &data;
+      storage_type &data;
       size_t offset;
   };
 
   class iterator {
     public:
-      iterator(table_type &data, size_t offset) : data(data), offset(offset) {}
+      iterator(storage_type &data, size_t offset) : data(data), offset(offset) {}
 
       iterator& operator++() {++offset; return *this;}
       iterator operator++(int) {auto copy = *this; offset++; return copy;}
@@ -659,14 +659,14 @@ struct orderline_t {
       auto operator*() { return dereferenced_iterator{data, offset}; }
 
     private:
-      table_type &data;
+      storage_type &data;
       size_t offset;
   };
 
   auto begin() {return iterator{data, 0};}
   auto end() {return iterator{data, size()};}
 
-  table_type data;
+  storage_type data;
 };
 //-----------------------------------------------------------------------------
 struct item_t {
@@ -676,7 +676,7 @@ struct item_t {
     std::vector<Varchar<24>>, //i_name
     std::vector<Numeric<5,2>>, //i_price
     std::vector<Varchar<50>> //i_data
-  > table_type;
+  > storage_type;
 
   auto size() {return std::get<0>(data).size();}
 
@@ -694,7 +694,7 @@ struct item_t {
 
   class dereferenced_iterator {
     public:
-      dereferenced_iterator(table_type &data, size_t offset) : data(data), offset(offset) {}
+      dereferenced_iterator(storage_type &data, size_t offset) : data(data), offset(offset) {}
 
       auto& i_id() { return std::get<0>(data)[offset]; }
       const auto& i_id() const { return std::get<0>(data)[offset]; }
@@ -708,13 +708,13 @@ struct item_t {
       const auto& i_data() const { return std::get<4>(data)[offset]; }
       
     private:
-      table_type &data;
+      storage_type &data;
       size_t offset;
   };
 
   class iterator {
     public:
-      iterator(table_type &data, size_t offset) : data(data), offset(offset) {}
+      iterator(storage_type &data, size_t offset) : data(data), offset(offset) {}
 
       iterator& operator++() {++offset; return *this;}
       iterator operator++(int) {auto copy = *this; offset++; return copy;}
@@ -729,14 +729,14 @@ struct item_t {
       auto operator*() { return dereferenced_iterator{data, offset}; }
 
     private:
-      table_type &data;
+      storage_type &data;
       size_t offset;
   };
 
   auto begin() {return iterator{data, 0};}
   auto end() {return iterator{data, size()};}
 
-  table_type data;
+  storage_type data;
 };
 //-----------------------------------------------------------------------------
 struct stock_t {
@@ -758,7 +758,7 @@ struct stock_t {
     std::vector<Numeric<4,0>>, //s_order_cnt
     std::vector<Numeric<4,0>>, //s_remote_cnt
     std::vector<Varchar<50>> //s_data
-  > table_type;
+  > storage_type;
 
   auto size() {return std::get<0>(data).size();}
 
@@ -800,7 +800,7 @@ struct stock_t {
 
   class dereferenced_iterator {
     public:
-      dereferenced_iterator(table_type &data, size_t offset) : data(data), offset(offset) {}
+      dereferenced_iterator(storage_type &data, size_t offset) : data(data), offset(offset) {}
 
       auto& s_i_id() { return std::get<0>(data)[offset]; }
       const auto& s_i_id() const { return std::get<0>(data)[offset]; }
@@ -838,13 +838,13 @@ struct stock_t {
       const auto& s_data() const { return std::get<16>(data)[offset]; }
       
     private:
-      table_type &data;
+      storage_type &data;
       size_t offset;
   };
 
   class iterator {
     public:
-      iterator(table_type &data, size_t offset) : data(data), offset(offset) {}
+      iterator(storage_type &data, size_t offset) : data(data), offset(offset) {}
 
       iterator& operator++() {++offset; return *this;}
       iterator operator++(int) {auto copy = *this; offset++; return copy;}
@@ -859,14 +859,14 @@ struct stock_t {
       auto operator*() { return dereferenced_iterator{data, offset}; }
 
     private:
-      table_type &data;
+      storage_type &data;
       size_t offset;
   };
 
   auto begin() {return iterator{data, 0};}
   auto end() {return iterator{data, size()};}
 
-  table_type data;
+  storage_type data;
 };
 //-----------------------------------------------------------------------------
 warehouse_t warehouse;
