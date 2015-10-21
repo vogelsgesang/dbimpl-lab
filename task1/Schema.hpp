@@ -1,5 +1,6 @@
 #ifndef H_Schema
 #define H_Schema
+#include <iterator>
 #include <vector>
 #include <tuple>
 #include "Types.hpp"
@@ -69,6 +70,12 @@ struct warehouse_t {
 
   class iterator {
     public:
+      typedef std::input_iterator_tag iterator_category; // actually not an input iterator. But this is the best fitting category
+      typedef dereferenced_iterator reference;
+      typedef dereferenced_iterator* pointer;
+      typedef dereferenced_iterator value_type;
+      typedef size_t difference_type;
+
       iterator(storage_type &data, size_t offset) : data(data), offset(offset) {}
 
       iterator& operator++() {++offset; return *this;}
@@ -169,6 +176,12 @@ struct district_t {
 
   class iterator {
     public:
+      typedef std::input_iterator_tag iterator_category; // actually not an input iterator. But this is the best fitting category
+      typedef dereferenced_iterator reference;
+      typedef dereferenced_iterator* pointer;
+      typedef dereferenced_iterator value_type;
+      typedef size_t difference_type;
+
       iterator(storage_type &data, size_t offset) : data(data), offset(offset) {}
 
       iterator& operator++() {++offset; return *this;}
@@ -319,6 +332,12 @@ struct customer_t {
 
   class iterator {
     public:
+      typedef std::input_iterator_tag iterator_category; // actually not an input iterator. But this is the best fitting category
+      typedef dereferenced_iterator reference;
+      typedef dereferenced_iterator* pointer;
+      typedef dereferenced_iterator value_type;
+      typedef size_t difference_type;
+
       iterator(storage_type &data, size_t offset) : data(data), offset(offset) {}
 
       iterator& operator++() {++offset; return *this;}
@@ -404,6 +423,12 @@ struct history_t {
 
   class iterator {
     public:
+      typedef std::input_iterator_tag iterator_category; // actually not an input iterator. But this is the best fitting category
+      typedef dereferenced_iterator reference;
+      typedef dereferenced_iterator* pointer;
+      typedef dereferenced_iterator value_type;
+      typedef size_t difference_type;
+
       iterator(storage_type &data, size_t offset) : data(data), offset(offset) {}
 
       iterator& operator++() {++offset; return *this;}
@@ -464,6 +489,12 @@ struct neworder_t {
 
   class iterator {
     public:
+      typedef std::input_iterator_tag iterator_category; // actually not an input iterator. But this is the best fitting category
+      typedef dereferenced_iterator reference;
+      typedef dereferenced_iterator* pointer;
+      typedef dereferenced_iterator value_type;
+      typedef size_t difference_type;
+
       iterator(storage_type &data, size_t offset) : data(data), offset(offset) {}
 
       iterator& operator++() {++offset; return *this;}
@@ -549,6 +580,12 @@ struct order_t {
 
   class iterator {
     public:
+      typedef std::input_iterator_tag iterator_category; // actually not an input iterator. But this is the best fitting category
+      typedef dereferenced_iterator reference;
+      typedef dereferenced_iterator* pointer;
+      typedef dereferenced_iterator value_type;
+      typedef size_t difference_type;
+
       iterator(storage_type &data, size_t offset) : data(data), offset(offset) {}
 
       iterator& operator++() {++offset; return *this;}
@@ -644,6 +681,12 @@ struct orderline_t {
 
   class iterator {
     public:
+      typedef std::input_iterator_tag iterator_category; // actually not an input iterator. But this is the best fitting category
+      typedef dereferenced_iterator reference;
+      typedef dereferenced_iterator* pointer;
+      typedef dereferenced_iterator value_type;
+      typedef size_t difference_type;
+
       iterator(storage_type &data, size_t offset) : data(data), offset(offset) {}
 
       iterator& operator++() {++offset; return *this;}
@@ -714,6 +757,12 @@ struct item_t {
 
   class iterator {
     public:
+      typedef std::input_iterator_tag iterator_category; // actually not an input iterator. But this is the best fitting category
+      typedef dereferenced_iterator reference;
+      typedef dereferenced_iterator* pointer;
+      typedef dereferenced_iterator value_type;
+      typedef size_t difference_type;
+
       iterator(storage_type &data, size_t offset) : data(data), offset(offset) {}
 
       iterator& operator++() {++offset; return *this;}
@@ -844,6 +893,12 @@ struct stock_t {
 
   class iterator {
     public:
+      typedef std::input_iterator_tag iterator_category; // actually not an input iterator. But this is the best fitting category
+      typedef dereferenced_iterator reference;
+      typedef dereferenced_iterator* pointer;
+      typedef dereferenced_iterator value_type;
+      typedef size_t difference_type;
+
       iterator(storage_type &data, size_t offset) : data(data), offset(offset) {}
 
       iterator& operator++() {++offset; return *this;}
@@ -869,14 +924,14 @@ struct stock_t {
   storage_type data;
 };
 //-----------------------------------------------------------------------------
-warehouse_t warehouse;
-district_t district;
-customer_t customer;
-history_t history;
-neworder_t neworder;
-order_t order;
-orderline_t orderline;
-item_t item;
-stock_t stock;
+extern warehouse_t warehouse;
+extern district_t district;
+extern customer_t customer;
+extern history_t history;
+extern neworder_t neworder;
+extern order_t order;
+extern orderline_t orderline;
+extern item_t item;
+extern stock_t stock;
 //-----------------------------------------------------------------------------
 #endif

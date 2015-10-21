@@ -50,7 +50,7 @@ clean:
 
 TASK1_OBJS=task1/main.o task1/neworderrandom.o task1/neworder.o task1/Types.o
 bin/task1$(BIN_SUFFIX):
-bin/runTests$(BIN_SUFFIX): $(addprefix $(OBJ_DIR)/, $(TASK1_OBJS))
+bin/task1$(BIN_SUFFIX): $(addprefix $(OBJ_DIR)/, $(TASK1_OBJS))
 	@mkdir -p $(dir $@)
 	$(CXX) $(LDFLAGS) $(filter-out tests, $^) $(LDLIBS) -o $@
 

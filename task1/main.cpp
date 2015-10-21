@@ -6,6 +6,16 @@
 
 using namespace std;
 
+warehouse_t warehouse;
+district_t district;
+customer_t customer;
+history_t history;
+neworder_t neworder;
+order_t order;
+orderline_t orderline;
+item_t item;
+stock_t stock;
+
 int main() {
   //load all the tables from disk
   auto data_folder = std::string{"task1/data/"};

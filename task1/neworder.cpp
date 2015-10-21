@@ -4,21 +4,21 @@
 
 void newOrder (int32_t w_id, int32_t d_id, int32_t c_id, int32_t items, int32_t supware[15], int32_t itemid[15], int32_t qty[15], Timestamp datetime) {
   // select w_tax from warehouse w where w.w_id=w_id;
-  auto warehouse_iter = std::find_if(warehouse.begin(), warehouse.end(), [=](auto& row){return row.w_id == w_id;});
+  auto warehouse_iter = std::find_if(warehouse.begin(), warehouse.end(), [=](auto row){return row.w_id() == w_id;});
   if(warehouse_iter == warehouse.end()) {
     throw "warehouse entry not found";
   }
   auto w_tax = (*warehouse_iter).w_tax();
 
   // select c_discount from customer c where c_w_id=w_id and c_d_id=d_id and c.c_id=c_id;
-  auto customer_iter = std::find_if(customer.begin(), customer.end(), [=](auto& row){return row.c_w_id()==w_id && row.c_d_id()==d_id && row.c_c_id()=c_id;});
+  auto customer_iter = std::find_if(customer.begin(), customer.end(), [=](auto row){return row.c_w_id()==w_id && row.c_d_id()==d_id && row.c_id()==c_id;});
   if(customer_iter == customer.end()) {
     throw "customer entry not found";
   }
   auto c_discount = (*customer_iter).c_discount();
 
   // select d_next_o_id as o_id,d_tax from district d where d_w_id=w_id and d.d_id=d_id;
-  auto district_iter = std::find_if(district.begin(), district.end(), [=](auto& row){return row.d_w_id()==w_id && row.d_id()==d_id;});
+  auto district_iter = std::find_if(district.begin(), district.end(), [=](auto row){return row.d_w_id()==w_id && row.d_id()==d_id;});
   if(district_iter == district.end()) {
     throw "district entry not found";
   }
@@ -49,14 +49,14 @@ void newOrder (int32_t w_id, int32_t d_id, int32_t c_id, int32_t items, int32_t 
 
   for (int32_t index = 0; index < items; index++) {
     // select i_price from item where i_id=itemid[index];
-    auto item_iter = std::find_if(item.begin(), item.end(), [=](auto& row){return row.i_id() == itemid[index];});
+    auto item_iter = std::find_if(item.begin(), item.end(), [=](auto row){return row.i_id() == itemid[index];});
     if(item_iter == item.end()) {
       throw "item entry not found";
     }
     auto i_price = (*item_iter).i_price();
 
     // select s_quantity,s_remote_cnt,s_order_cnt,case d_id when 1 then s_dist_01 when 2 then s_dist_02 ... end as s_dist from stock where s_w_id=supware[index] and s_i_id=itemid[index];
-    auto stock_iter = std::find_if(stock.begin(), stock.end(), [=](auto& row){return row.s_w_id() == supware[index] && row.s_i_id() == itemid[index];});
+    auto stock_iter = std::find_if(stock.begin(), stock.end(), [=](auto row){return row.s_w_id() == supware[index] && row.s_i_id() == itemid[index];});
     if(stock_iter == stock.end()) {
       throw "stock entry not found";
     }
@@ -87,7 +87,7 @@ void newOrder (int32_t w_id, int32_t d_id, int32_t c_id, int32_t items, int32_t 
        (*stock_iter).s_quantity() = s_quantity+91-qty[index];
     }
 
-    auto stock_iter2 = std::find_if(stock.begin(), stock.end(), [=](auto& row){return row.s_w_id() == w_id && row.s_i_id() == itemid[index];});
+    auto stock_iter2 = std::find_if(stock.begin(), stock.end(), [=](auto row){return row.s_w_id() == w_id && row.s_i_id() == itemid[index];});
     if(stock_iter2 == stock.end()) {
       throw "stock entry not found";
     }

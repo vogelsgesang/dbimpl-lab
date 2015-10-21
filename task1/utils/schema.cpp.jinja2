@@ -1,5 +1,6 @@
 #ifndef H_Schema
 #define H_Schema
+#include <iterator>
 #include <vector>
 #include <tuple>
 #include "Types.hpp"
@@ -34,6 +35,12 @@ struct {{table.name}}_t {
 
   class iterator {
     public:
+      typedef std::input_iterator_tag iterator_category; // actually not an input iterator. But this is the best fitting category
+      typedef dereferenced_iterator reference;
+      typedef dereferenced_iterator* pointer;
+      typedef dereferenced_iterator value_type;
+      typedef size_t difference_type;
+
       iterator(storage_type &data, size_t offset) : data(data), offset(offset) {}
 
       iterator& operator++() {++offset; return *this;}
@@ -61,7 +68,7 @@ struct {{table.name}}_t {
 //-----------------------------------------------------------------------------
 {% endfor -%}
 {% for table in schema -%}
-{{table.name}}_t {{table.name}};
+extern {{table.name}}_t {{table.name}};
 {% endfor -%}
 //-----------------------------------------------------------------------------
 #endif
