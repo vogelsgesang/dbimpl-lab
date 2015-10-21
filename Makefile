@@ -32,7 +32,7 @@ endif
 OBJ_DIR=build/$(BUILD_TYPE)
 
 .PHONY: all
-all: $(addsuffix $(BIN_SUFFIX), bin/runTests bin/task1)
+all: $(addsuffix $(BIN_SUFFIX), bin/runTests bin/tpcc)
 
 .PHONY: test
 test: all
@@ -48,14 +48,14 @@ clean:
 # the actual binaries
 #####################
 
-TASK1_OBJS=task1/main.o task1/neworderrandom.o task1/neworder.o task1/Types.o
-bin/task1$(BIN_SUFFIX):
-bin/task1$(BIN_SUFFIX): $(addprefix $(OBJ_DIR)/, $(TASK1_OBJS))
+TPCC_OBJS=tpcc_main.o queries/neworderrandom.o queries/neworder.o schema/Types.o
+bin/tpcc$(BIN_SUFFIX):
+bin/tpcc$(BIN_SUFFIX): $(addprefix $(OBJ_DIR)/, $(TPCC_OBJS))
 	@mkdir -p $(dir $@)
 	$(CXX) $(LDFLAGS) $(filter-out tests, $^) $(LDLIBS) -o $@
 
 RUNTESTS_OBJS=gtest_main.a $(patsubst %.cpp, %.o, $(shell find tests/ -iname *Test.cpp -type f)) \
-							task1/Types.o
+							schema/Types.o
 bin/runTests$(BIN_SUFFIX): CPPFLAGS+= -isystem $(GTEST_DIR)/include
 #the dependency on the _directory_ containing the test specifications is neccessary in
 #order to handle deleted files correctly

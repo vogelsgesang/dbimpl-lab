@@ -1,3 +1,6 @@
+# The files containing the actual data
+/data/
+
 # Vim files
 *.swp
 .ycm_extra_conf.py

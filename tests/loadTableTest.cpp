@@ -3,8 +3,8 @@
 #include <string>
 using namespace std;
 
-#include "task1/Types.hpp"
-#include "task1/parseTbl.hpp"
+#include "schema/Types.hpp"
+#include "schema/parseTbl.hpp"
 
 
 TEST(ParseTblTest, parsesATable) {
