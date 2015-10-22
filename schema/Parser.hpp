@@ -37,9 +37,10 @@ class Parser {
     std::string expectToken();
     void expectToken(const char* expected);
     static bool isIdentifier(std::string token);
-
     std::string parseIdentifier();
     int parseInt();
+
+    DataType parseDataType();
     void parseTableDescriptionStatement(TableDescription* currentTable);
     void parseTableDescription(TableDescription* table);
 };

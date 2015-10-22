@@ -39,31 +39,31 @@ TEST(SchemaParserTest, parsesValidSchemaDefinitions) {
     ASSERT_EQ(5, schema->tables[0].columns.size());
 
     EXPECT_EQ(std::string("attr1"), schema->tables[0].columns[0].name);
-    EXPECT_EQ(DataType::Integer,    schema->tables[0].columns[0].type);
+    EXPECT_EQ(DataTypeTag::Integer, schema->tables[0].columns[0].type.typeTag);
     EXPECT_FALSE(                   schema->tables[0].columns[0].notNull);
 
     EXPECT_EQ(std::string("attr2"), schema->tables[0].columns[1].name);
-    EXPECT_EQ(DataType::Integer,    schema->tables[0].columns[1].type);
+    EXPECT_EQ(DataTypeTag::Integer, schema->tables[0].columns[1].type.typeTag);
     EXPECT_FALSE(                   schema->tables[0].columns[1].notNull);
 
     EXPECT_EQ(std::string("attr3"), schema->tables[0].columns[2].name);
-    EXPECT_EQ(DataType::Numeric,    schema->tables[0].columns[2].type);
-    EXPECT_EQ(9,                    schema->tables[0].columns[2].typeAttributes.numeric.integerPlaces);
-    EXPECT_EQ(2,                    schema->tables[0].columns[2].typeAttributes.numeric.decimalPlaces);
-    EXPECT_FALSE(                    schema->tables[0].columns[2].notNull);
+    EXPECT_EQ(DataTypeTag::Numeric, schema->tables[0].columns[2].type.typeTag);
+    EXPECT_EQ(9,                    schema->tables[0].columns[2].type.attributes.numeric.integerPlaces);
+    EXPECT_EQ(2,                    schema->tables[0].columns[2].type.attributes.numeric.decimalPlaces);
+    EXPECT_FALSE(                   schema->tables[0].columns[2].notNull);
 
     EXPECT_EQ(std::string("attr4"), schema->tables[0].columns[3].name);
-    EXPECT_EQ(DataType::Char,       schema->tables[0].columns[3].type);
-    EXPECT_EQ(10,                   schema->tables[0].columns[4].typeAttributes.charLen);
+    EXPECT_EQ(DataTypeTag::Char,       schema->tables[0].columns[3].type.typeTag);
+    EXPECT_EQ(10,                   schema->tables[0].columns[4].type.attributes.charLen);
     EXPECT_FALSE(                   schema->tables[0].columns[3].notNull);
 
     EXPECT_EQ(std::string("attr5"), schema->tables[0].columns[4].name);
-    EXPECT_EQ(DataType::VarChar,    schema->tables[0].columns[4].type);
-    EXPECT_EQ(10,                   schema->tables[0].columns[4].typeAttributes.charLen);
+    EXPECT_EQ(DataTypeTag::VarChar,    schema->tables[0].columns[4].type.typeTag);
+    EXPECT_EQ(10,                   schema->tables[0].columns[4].type.attributes.charLen);
     EXPECT_TRUE(                    schema->tables[0].columns[4].notNull);
 
     EXPECT_EQ(std::string("attr1"), schema->tables[1].columns[0].name);
-    EXPECT_EQ(DataType::Integer,    schema->tables[1].columns[0].type);
+    EXPECT_EQ(DataTypeTag::Integer,    schema->tables[1].columns[0].type.typeTag);
     EXPECT_FALSE(                   schema->tables[1].columns[0].notNull);
 
     ASSERT_EQ(2, schema->tables[0].primaryKey.size());

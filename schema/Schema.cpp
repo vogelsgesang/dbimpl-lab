@@ -1,20 +1,20 @@
 #include "Schema.hpp"
 #include <sstream>
 
-static std::string translateType(const ColumnDescription& col) {
+static std::string translateType(const DataType& type) {
   std::ostringstream stream;
-  if(col.type == DataType::Integer) {
+  if(type.typeTag == DataTypeTag::Integer) {
     stream << "Integer";
-  } else if(col.type == DataType::Numeric) {
-    stream << "Numeric<" << (int) col.typeAttributes.numeric.integerPlaces
-           << "," << (int) col.typeAttributes.numeric.decimalPlaces << ">";
-  } else if(col.type == DataType::Char) {
-    stream << "Char<" << (int) col.typeAttributes.charLen << ">";
-  } else if(col.type == DataType::VarChar) {
-    stream << "Varchar<" << (int) col.typeAttributes.charLen << ">";
-  } else if(col.type == DataType::Date) {
+  } else if(type.typeTag == DataTypeTag::Numeric) {
+    stream << "Numeric<" << (int) type.attributes.numeric.integerPlaces
+           << "," << (int) type.attributes.numeric.decimalPlaces << ">";
+  } else if(type.typeTag == DataTypeTag::Char) {
+    stream << "Char<" << (int) type.attributes.charLen << ">";
+  } else if(type.typeTag == DataTypeTag::VarChar) {
+    stream << "Varchar<" << (int) type.attributes.charLen << ">";
+  } else if(type.typeTag == DataTypeTag::Date) {
     stream << "Date";
-  } else if(col.type == DataType::Timestamp) {
+  } else if(type.typeTag == DataTypeTag::Timestamp) {
     stream << "Timestamp";
   }
   return stream.str();
@@ -34,7 +34,7 @@ void Schema::generateCppCode(std::ostream& out) {
       "struct " << table.name << "_t {\n";
     // actual columns
     for(auto& column : table.columns) {
-      out << "  std::vector<" << translateType(column) << "> col_" << column.name << ";\n";
+      out << "  std::vector<" << translateType(column.type) << "> col_" << column.name << ";\n";
     }
     // primary key index
     bool first;
@@ -44,7 +44,7 @@ void Schema::generateCppCode(std::ostream& out) {
       for(auto& pkColumn : table.primaryKey) {
         auto& column = table.columns[pkColumn];
         if(!first) out << ",";
-        out << translateType(column);
+        out << translateType(column.type);
         first = false;
       }
       out << ">, size_t> primary_key_idx;\n";
@@ -54,7 +54,7 @@ void Schema::generateCppCode(std::ostream& out) {
     first = true;
     for(auto& column : table.columns) {
       if(!first) out << ",";
-      out << translateType(column) << " " << column.name;
+      out << translateType(column.type) << " " << column.name;
       first = false;
     }
     out << ") {\n";

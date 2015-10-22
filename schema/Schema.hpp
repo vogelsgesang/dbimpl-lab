@@ -5,19 +5,23 @@
 #include <vector>
 #include <ostream>
 
-enum class DataType : char { Integer, Numeric, Char, VarChar, Date, Timestamp };
+enum class DataTypeTag : char { Integer, Numeric, Char, VarChar, Date, Timestamp };
 
-struct ColumnDescription {
-  std::string name;
-  DataType type;
+struct DataType {
+  DataTypeTag typeTag;
   union {
     unsigned char charLen;
     struct {
       unsigned char integerPlaces;
       unsigned char decimalPlaces;
     } numeric;
-  } typeAttributes;
+  } attributes;
+};
+
+struct ColumnDescription {
+  std::string name;
   bool notNull;
+  DataType type;
   ColumnDescription(const std::string& name) : name(name), notNull(false) {}
 };
 

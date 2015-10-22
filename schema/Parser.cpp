@@ -7,8 +7,7 @@ optional<string> Parser::getNextToken() {
   const auto whitespace = string{" \t\n"};
   const auto seperators = string{" \t\n,)(;\""};
   //ignore leading whitespace
-  while(in->good() && whitespace.find(in->peek()) != string::npos) {
-    if(in->get() == '\n') lineno++;
+  while(in->good() && whitespace.find(in->peek()) != string::npos) { if(in->get() == '\n') lineno++;
   }
   //parse the actual token
   string token;
@@ -80,6 +79,36 @@ int Parser::parseInt() {
   return std::atoi(token.c_str());
 }
 //-------------------------------------------------------------------
+DataType Parser::parseDataType() {
+  DataType type;
+  auto token = expectToken();
+  if(token == "integer") {
+    type.typeTag = DataTypeTag::Integer;
+  } else if(token == "numeric") {
+    type.typeTag = DataTypeTag::Numeric;
+    expectToken("(");
+    type.attributes.numeric.integerPlaces = parseInt();
+    expectToken(",");
+    type.attributes.numeric.decimalPlaces = parseInt();
+    expectToken(")");
+  } else if(token == "char") {
+    type.typeTag = DataTypeTag::Char;
+    expectToken("(");
+    type.attributes.charLen = parseInt();
+    expectToken(")");
+  } else if(token == "varchar") {
+    type.typeTag = DataTypeTag::VarChar;
+    expectToken("(");
+    type.attributes.charLen = parseInt();
+    expectToken(")");
+  } else if(token == "timestamp") {
+    type.typeTag = DataTypeTag::Timestamp;
+  } else {
+    throw ParserError(lineno, string{"expected a valid type name; found: "} + token);
+  }
+  return type;
+}
+//-------------------------------------------------------------------
 void Parser::parseTableDescriptionStatement(TableDescription* currentTable) {
   auto token = expectToken();
   auto& primaryKey = currentTable->primaryKey;
@@ -104,31 +133,7 @@ void Parser::parseTableDescriptionStatement(TableDescription* currentTable) {
   } else if(isIdentifier(token)) {
     columns.emplace_back(token);
     auto& currentColumn = columns.back();
-    auto dataType = expectToken();
-    if(dataType == "integer") {
-      currentColumn.type = DataType::Integer;
-    } else if(dataType == "numeric") {
-      currentColumn.type = DataType::Numeric;
-      expectToken("(");
-      currentColumn.typeAttributes.numeric.integerPlaces = parseInt();
-      expectToken(",");
-      currentColumn.typeAttributes.numeric.decimalPlaces = parseInt();
-      expectToken(")");
-    } else if(dataType == "char") {
-      currentColumn.type = DataType::Char;
-      expectToken("(");
-      currentColumn.typeAttributes.charLen = parseInt();
-      expectToken(")");
-    } else if(dataType == "varchar") {
-      currentColumn.type = DataType::VarChar;
-      expectToken("(");
-      currentColumn.typeAttributes.charLen = parseInt();
-      expectToken(")");
-    } else if(dataType == "timestamp") {
-      currentColumn.type = DataType::Timestamp;
-    } else {
-      throw ParserError(lineno, string{"expected a valid type name; found: "} + dataType);
-    }
+    columns.back().type = parseDataType();
     if(in->peek() != ',' && in->peek() != ')') {
       expectToken("not");
       expectToken("null");
