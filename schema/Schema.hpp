@@ -16,13 +16,14 @@ struct ColumnDescription {
       unsigned char decimalPlaces;
     } numeric;
   } typeAttributes;
-  ColumnDescription(const std::string& name) : name(name) {}
+  bool notNull;
+  ColumnDescription(const std::string& name) : name(name), notNull(false) {}
 };
 
 struct TableDescription {
   std::string name;
   std::vector<ColumnDescription> columns;
-  std::vector<std::string> primaryKeyColums;
+  std::vector<int> primaryKey;
   TableDescription(const std::string& name) : name(name) {}
 };
 

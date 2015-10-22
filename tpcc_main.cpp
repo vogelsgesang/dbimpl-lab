@@ -1,7 +1,7 @@
 #include <iostream>
 #include <fstream>
 #include <ctime>
-#include "schema/Schema.hpp"
+#include "schema/GeneratedSchema.hpp"
 #include "schema/parseTbl.hpp"
 #include "schema/Types.hpp"
 #include "queries/neworderrandom.hpp"

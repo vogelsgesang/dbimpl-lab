@@ -7,16 +7,16 @@ optional<string> Parser::getNextToken() {
   const auto whitespace = string{" \t\n"};
   const auto seperators = string{" \t\n,)(;"};
   //ignore leading whitespace
-  while(in.good() && whitespace.find(in.peek()) != string::npos) in.ignore();
+  while(in->good() && whitespace.find(in->peek()) != string::npos) in->ignore();
   //make sure, the input stream did not reach its end yet
-  if(!in.good()) {
+  if(!in->good()) {
     return nullopt;
   }
   //parse the actual token
   ostringstream token_content;
   do {
-    token_content << in.get();
-  } while(in.good() && seperators.find(in.peek()) != string::npos);
+    token_content << in->get();
+  } while(in->good() && seperators.find(in->peek()) != string::npos);
   string token = token_content.str();
   std::transform(token.begin(), token.end(), token.begin(), ::tolower);
   return token;
@@ -72,23 +72,27 @@ int Parser::parseInt() {
 //-------------------------------------------------------------------
 void Parser::parseTableDescriptionStatement(TableDescription* currentTable) {
   auto token = expectToken();
+  auto& primaryKey = currentTable->primaryKey;
+  auto& columns = currentTable->columns;
   if(token == "primary") {
     expectToken("key");
     expectToken("(");
-    if(!currentTable->primaryKeyColums.empty()) {
+    if(!primaryKey.empty()) {
       throw ParserError(lineno, "primary key already defined");
     }
     std::string token = expectToken();
     while(isIdentifier(token)) {
-      currentTable->primaryKeyColums.push_back(token);
+      auto columnIdx = std::find_if(columns.begin(), columns.end(),
+                                    [&token](auto& e){return e.name == token;}) - columns.begin();
+      currentTable->primaryKey.push_back(columnIdx);
       expectToken(",");
     }
     if(token != ")") {
       throw ParserError(lineno, string{"expected \")\"; found: \""} + token + ")");
     }
   } else if(isIdentifier(token)) {
-    currentTable->columns.emplace_back(token);
-    auto& currentColumn = currentTable->columns.back();
+    columns.emplace_back(token);
+    auto& currentColumn = columns.back();
     auto dataType = expectToken();
     if(dataType == "integer") {
       currentColumn.type = DataType::Integer;
@@ -133,7 +137,9 @@ void Parser::parseTableDescription(TableDescription* table) {
   expectToken(";");
 }
 //-------------------------------------------------------------------
-unique_ptr<Schema> Parser::parseSqlSchema() {
+unique_ptr<Schema> Parser::parseSqlSchema(istream& inStream) {
+  this->in = &inStream;
+  lineno = 0;
   auto schema = make_unique<Schema>();
   while(auto firstToken= getNextToken()) {
     if(*firstToken == "create") {

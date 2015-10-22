@@ -27,9 +27,8 @@ class ParserError : std::exception {
 class Parser {
   public:
     std::string fileName;
-    std::istream& in;
-    Parser(std::istream& in) : in(in), lineno(0) {}
-    std::unique_ptr<Schema> parseSqlSchema();
+    std::istream* in;
+    std::unique_ptr<Schema> parseSqlSchema(std::istream& in);
 
   private:
     int lineno;
