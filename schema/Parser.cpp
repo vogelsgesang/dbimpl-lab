@@ -3,12 +3,16 @@
 using namespace std;
 using namespace std::experimental;
 //-------------------------------------------------------------------
-optional<string> Parser::getNextToken() {
+void Parser::skipWhitespace() {
   const auto whitespace = string{" \t\n"};
-  const auto seperators = string{" \t\n,)(;\""};
-  //ignore leading whitespace
-  while(in->good() && whitespace.find(in->peek()) != string::npos) { if(in->get() == '\n') lineno++;
+  while(in->good() && whitespace.find(in->peek()) != string::npos) {
+    if(in->get() == '\n') lineno++;
   }
+}
+//-------------------------------------------------------------------
+optional<string> Parser::getNextToken() {
+  const auto seperators = string{" \t\n,)(;\""};
+  skipWhitespace();
   //parse the actual token
   string token;
   char firstChar;
@@ -109,27 +113,33 @@ DataType Parser::parseDataType() {
   return type;
 }
 //-------------------------------------------------------------------
+std::vector<unsigned> Parser::parseColumnList(const TableDescription& table) {
+  std::vector<unsigned> idList;
+  expectToken("(");
+  std::string trailingToken;
+  do {
+    std::string name = parseIdentifier();
+    auto columnIdx = std::find_if(table.columns.cbegin(), table.columns.cend(),
+                                  [&name](auto& e){return e.name == name;}) - table.columns.cbegin();
+    idList.push_back(columnIdx);
+    trailingToken = expectToken();
+  } while(trailingToken == ",");
+  if(trailingToken != ")") {
+    throw ParserError(lineno, string{"expected \")\"; found: \""} + trailingToken + "\"");
+  }
+  return idList;
+}
+//-------------------------------------------------------------------
 void Parser::parseTableDescriptionStatement(TableDescription* currentTable) {
   auto token = expectToken();
   auto& primaryKey = currentTable->primaryKey;
   auto& columns = currentTable->columns;
   if(token == "primary") {
     expectToken("key");
-    expectToken("(");
     if(!primaryKey.empty()) {
       throw ParserError(lineno, "primary key already defined");
     }
-    std::string trailingToken;
-    do {
-      std::string name = parseIdentifier();
-      auto columnIdx = std::find_if(columns.begin(), columns.end(),
-                                    [&name](auto& e){return e.name == name;}) - columns.begin();
-      currentTable->primaryKey.push_back(columnIdx);
-      trailingToken = expectToken();
-    } while(trailingToken == ",");
-    if(trailingToken != ")") {
-      throw ParserError(lineno, string{"expected \")\"; found: \""} + token + ")");
-    }
+    primaryKey = parseColumnList(*currentTable);
   } else if(isIdentifier(token)) {
     columns.emplace_back(token);
     auto& currentColumn = columns.back();
@@ -150,9 +160,20 @@ void Parser::parseTableDescription(TableDescription* table) {
     token = expectToken();
   } while(token == ",");
   if(token != ")") {
-    throw ParserError(lineno, string{"expected \")\"; found: \""} + token + ")");
+    throw ParserError(lineno, string{"expected \")\"; found: \""} + token + "\"");
   }
-  expectToken(";");
+}
+//-------------------------------------------------------------------
+void Parser::parseIndexDescription(const Schema& schema, IndexDescription* index) {
+  expectToken("on");
+  std::string tableName = parseIdentifier();
+  auto tableIter = std::find_if(schema.tables.begin(), schema.tables.end(),
+                                [&tableName](auto& e){return e.name == tableName;});
+  if(tableIter == schema.tables.cend()) {
+    throw ParserError(lineno, string{"Unkown table: \""} + tableName + ")");
+  }
+  index->table = tableIter - schema.tables.cbegin();
+  index->columns = parseColumnList(*tableIter);
 }
 //-------------------------------------------------------------------
 unique_ptr<Schema> Parser::parseSqlSchema(istream& inStream) {
@@ -161,12 +182,20 @@ unique_ptr<Schema> Parser::parseSqlSchema(istream& inStream) {
   auto schema = make_unique<Schema>();
   while(auto firstToken = getNextToken()) {
     if(*firstToken == "create") {
-      expectToken("table");
-      schema->tables.emplace_back(parseIdentifier());
-      parseTableDescription(&schema->tables.back());
+      auto secondToken = expectToken();
+      if(secondToken == "table") {
+        schema->tables.emplace_back(parseIdentifier());
+        parseTableDescription(&schema->tables.back());
+      } else if(secondToken == "index") {
+        schema->indices.emplace_back(parseIdentifier());
+        parseIndexDescription(*schema, &schema->indices.back());
+      } else {
+        throw ParserError(lineno, string{"expected \"Table\" or \"index\"; found: \""} + secondToken + "\"");
+      }
     } else {
       throw ParserError(lineno, string{"Expected 'create'; found: '" + *firstToken + "'"});
     }
+    expectToken(";");
   }
   return schema;
 }

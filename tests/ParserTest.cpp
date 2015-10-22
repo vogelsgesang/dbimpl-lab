@@ -28,7 +28,7 @@ TEST(SchemaParserTest, parsesValidSchemaDefinitions) {
       ");"
       );
   std::istringstream in(schemaDefinition);
-  
+
   try {
     auto schema = parser.parseSqlSchema(in);
 
@@ -70,6 +70,39 @@ TEST(SchemaParserTest, parsesValidSchemaDefinitions) {
     EXPECT_EQ(1, schema->tables[0].primaryKey[0]);
     EXPECT_EQ(3, schema->tables[0].primaryKey[1]);
     ASSERT_EQ(0, schema->tables[1].primaryKey.size());
+  } catch(ParserError& e) {
+    std::cout << e.what() << std::endl;
+    FAIL();
+  }
+}
+
+TEST(SchemaParserTest, parsesIndexDefinitions) {
+  auto parser = Parser{};
+  std::string schemaDefinition(
+      "CREATE TABLE test1 ("
+      "  attr1 integer,"
+      "  attr2 integer,"
+      "  attr3 integer"
+      ");"
+      "CREATE INDEX idx ON test1 (attr1, attr3);"
+      );
+  std::istringstream in(schemaDefinition);
+
+  try {
+    auto schema = parser.parseSqlSchema(in);
+
+    ASSERT_EQ(1, schema->tables.size());
+    EXPECT_EQ(std::string("test1"), schema->tables[0].name);
+
+    ASSERT_EQ(3, schema->tables[0].columns.size());
+    EXPECT_EQ(std::string("attr1"), schema->tables[0].columns[0].name);
+    EXPECT_EQ(std::string("attr2"), schema->tables[0].columns[1].name);
+    EXPECT_EQ(std::string("attr3"), schema->tables[0].columns[2].name);
+
+    ASSERT_EQ(1, schema->indices.size());
+    ASSERT_EQ(0, schema->indices[0].table);
+    ASSERT_EQ(0, schema->indices[0].columns[0]);
+    ASSERT_EQ(2, schema->indices[0].columns[1]);
   } catch(ParserError& e) {
     std::cout << e.what() << std::endl;
     FAIL();

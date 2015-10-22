@@ -33,6 +33,7 @@ class Parser {
   private:
     int lineno;
 
+    void skipWhitespace();
     std::experimental::optional<std::string> getNextToken();
     std::string expectToken();
     void expectToken(const char* expected);
@@ -41,8 +42,10 @@ class Parser {
     int parseInt();
 
     DataType parseDataType();
+    std::vector<unsigned> parseColumnList(const TableDescription& table);
     void parseTableDescriptionStatement(TableDescription* currentTable);
     void parseTableDescription(TableDescription* table);
+    void parseIndexDescription(const Schema& schema, IndexDescription* idx);
 };
 
 #endif

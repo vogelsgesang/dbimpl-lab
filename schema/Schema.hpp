@@ -28,12 +28,20 @@ struct ColumnDescription {
 struct TableDescription {
   std::string name;
   std::vector<ColumnDescription> columns;
-  std::vector<int> primaryKey;
+  std::vector<unsigned> primaryKey;
   TableDescription(const std::string& name) : name(name) {}
+};
+
+struct IndexDescription {
+  std::string name;
+  int table;
+  std::vector<unsigned> columns;
+  IndexDescription(const std::string& name) : name(name) {}
 };
 
 struct Schema {
   std::vector<TableDescription> tables;
+  std::vector<IndexDescription> indices;
   void generateCppCode(std::ostream& out);
 };
 
