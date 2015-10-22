@@ -86,6 +86,15 @@ void Schema::generateCppCode(std::ostream& out) {
       out << "    this->col_" << column.name << "[tid] = this->col_" << column.name << ".back();\n";
       out << "    this->col_" << column.name << ".pop_back();\n";
     }
+    out << "    this->primary_key_idx[std::make_tuple(";
+    first = true;
+    for(auto& pkColumn : table.primaryKey) {
+      auto& column = table.columns[pkColumn];
+      if(!first) out << ",";
+      out << "this->col_" << column.name << ".back()";
+      first = false;
+    }
+    out << ")] = tid;\n";
     out << "  }\n";
     //TODO: parse
     out << "}\n";
