@@ -32,7 +32,7 @@ endif
 OBJ_DIR=build/$(BUILD_TYPE)
 
 .PHONY: all
-all: $(addsuffix $(BIN_SUFFIX), bin/runTests bin/tpcc)
+all: $(addsuffix $(BIN_SUFFIX), bin/runTests bin/tpcc bin/generate_schema)
 
 .PHONY: test
 test: all
@@ -48,8 +48,12 @@ clean:
 # the actual binaries
 #####################
 
+GENERATE_SCHEMA_OBJS=generate_schema.o schema/Types.o schema/Schema.o schema/Parser.o
+bin/generate_schema$(BIN_SUFFIX): $(addprefix $(OBJ_DIR)/, $(GENERATE_SCHEMA_OBJS))
+	@mkdir -p $(dir $@)
+	$(CXX) $(LDFLAGS) $(filter-out tests, $^) $(LDLIBS) -o $@
+
 TPCC_OBJS=tpcc_main.o schema/Types.o schema/Parser.o queries/neworderrandom.o queries/neworder.o
-bin/tpcc$(BIN_SUFFIX):
 bin/tpcc$(BIN_SUFFIX): $(addprefix $(OBJ_DIR)/, $(TPCC_OBJS))
 	@mkdir -p $(dir $@)
 	$(CXX) $(LDFLAGS) $(filter-out tests, $^) $(LDLIBS) -o $@

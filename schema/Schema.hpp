@@ -3,6 +3,7 @@
 
 #include <string>
 #include <vector>
+#include <ostream>
 
 enum class DataType : char { Integer, Numeric, Char, VarChar, Date, Timestamp };
 
@@ -29,6 +30,7 @@ struct TableDescription {
 
 struct Schema {
   std::vector<TableDescription> tables;
+  void generateCppCode(std::ostream& out);
 };
 
 #endif
