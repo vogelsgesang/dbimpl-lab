@@ -28,6 +28,7 @@ struct ColumnDescription {
 struct IndexDescription {
   std::string name;
   std::vector<unsigned> columns;
+  bool prefixIndexable = false;
   IndexDescription(const std::string& name) : name(name) {}
 };
 
@@ -35,6 +36,7 @@ struct TableDescription {
   std::string name;
   std::vector<ColumnDescription> columns;
   std::vector<unsigned> primaryKey;
+  bool primaryKeyPrefixIndexable = false;
   std::vector<IndexDescription> indices;
   TableDescription(const std::string& name) : name(name) {}
 };

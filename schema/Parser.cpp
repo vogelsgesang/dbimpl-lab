@@ -131,19 +131,26 @@ std::vector<unsigned> Parser::parseColumnList(const TableDescription& table) {
 }
 //-------------------------------------------------------------------
 void Parser::parseTableDescriptionStatement(TableDescription* currentTable) {
-  auto token = expectToken();
+  auto firstToken = expectToken();
   auto& primaryKey = currentTable->primaryKey;
   auto& columns = currentTable->columns;
-  if(token == "primary") {
-    expectToken("key");
+  if(firstToken == "primary") {
+    auto secondToken = expectToken();
+    if(secondToken == "__prefix__") {
+      currentTable->primaryKeyPrefixIndexable = true;
+      expectToken("key");
+    } else if(secondToken != "key") {
+      throw ParserError(lineno, string{"expected \"key\" or \"__prefix__\"; found: \""} + secondToken + "\"");
+    }
     if(!primaryKey.empty()) {
       throw ParserError(lineno, "primary key already defined");
     }
     primaryKey = parseColumnList(*currentTable);
-  } else if(isIdentifier(token)) {
-    columns.emplace_back(token);
+  } else if(isIdentifier(firstToken)) {
+    columns.emplace_back(firstToken);
     auto& currentColumn = columns.back();
     columns.back().type = parseDataType();
+    skipWhitespace();
     if(in->peek() != ',' && in->peek() != ')') {
       expectToken("not");
       expectToken("null");
@@ -164,7 +171,7 @@ void Parser::parseTableDescription(TableDescription* table) {
   }
 }
 //-------------------------------------------------------------------
-void Parser::parseIndexDescription(Schema* schema) {
+void Parser::parseIndexDescription(Schema* schema, bool prefixIndexable) {
   auto idxName = parseIdentifier();
   expectToken("on");
   auto tableName = parseIdentifier();
@@ -176,6 +183,7 @@ void Parser::parseIndexDescription(Schema* schema) {
   auto& table = *tableIter;
   table.indices.emplace_back(idxName);
   auto& index = table.indices.back();
+  index.prefixIndexable = prefixIndexable;
   index.columns = parseColumnList(table);
 }
 //-------------------------------------------------------------------
@@ -189,8 +197,11 @@ unique_ptr<Schema> Parser::parseSqlSchema(istream& inStream) {
       if(secondToken == "table") {
         schema->tables.emplace_back(parseIdentifier());
         parseTableDescription(&schema->tables.back());
-      } else if(secondToken == "index") {
+      } else if(secondToken == "index") { //TODO: parse "__prefix__"
         parseIndexDescription(schema.get());
+      } else if(secondToken == "__prefix__") {
+        expectToken("index");
+        parseIndexDescription(schema.get(), true);
       } else {
         throw ParserError(lineno, string{"expected \"Table\" or \"index\"; found: \""} + secondToken + "\"");
       }

@@ -45,7 +45,7 @@ class Parser {
     std::vector<unsigned> parseColumnList(const TableDescription& table);
     void parseTableDescriptionStatement(TableDescription* currentTable);
     void parseTableDescription(TableDescription* table);
-    void parseIndexDescription(Schema* schema);
+    void parseIndexDescription(Schema* schema, bool prefixIndexable = false);
 };
 
 #endif

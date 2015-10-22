@@ -48,7 +48,11 @@ void Schema::generateCppCode(std::ostream& out) {
     }
     // primary key index
     if(!table.primaryKey.empty()) {
-      out << "  std::unordered_map<std::tuple<";
+      if(table.primaryKeyPrefixIndexable) {
+        out << "  std::map<std::tuple<";
+      } else {
+        out << "  std::unordered_map<std::tuple<";
+      }
       generateList(out, table.primaryKey, [&](auto& out, auto& col){
                out << translateType(table.columns[col].type);
           });
@@ -56,7 +60,11 @@ void Schema::generateCppCode(std::ostream& out) {
     }
     // additional idcs
     for(auto& idx : table.indices) {
-      out << "  std::map<std::tuple<";
+      if(idx.prefixIndexable) {
+        out << "  std::map<std::tuple<";
+      } else {
+        out << "  std::unordered_map<std::tuple<";
+      }
       generateList(out, idx.columns, [&](auto& out, auto& col){
                out << translateType(table.columns[col].type);
           });
