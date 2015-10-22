@@ -73,29 +73,33 @@ void Schema::generateCppCode(std::ostream& out) {
     for(auto& column : table.columns) {
       out << "    this->col_" << column.name << ".push_back(" << column.name << ");\n";
     }
-    out << "    this->primary_key_idx.insert(std::make_pair(std::make_tuple(";
-    generateList(out, table.primaryKey, [&](auto& out, auto& col){
-            out << table.columns[col].name;
-        });
-    out << "), this->col_" << table.columns[0].name << ".size()))\n";
+    if(!table.primaryKey.empty()) {
+      out << "    this->primary_key_idx.insert(std::make_pair(std::make_tuple(";
+      generateList(out, table.primaryKey, [&](auto& out, auto& col){
+              out << table.columns[col].name;
+          });
+      out << "), this->col_" << table.columns[0].name << ".size()))\n";
+    }
     out << "  }\n";
     // delete
     //TODO: secondary indices
-    out << "  void delete_tuple(size_t tid) {\n"
-           "    this->primary_key_idx.erase(std::make_tuple(";
-    generateList(out, table.primaryKey, [&](auto& out, auto& col){
-            out << "this->col_" << table.columns[col].name << "[tid]";
-        });
-    out << "));\n";
+    out << "  void delete_tuple(size_t tid) {\n";
     for(auto& column : table.columns) {
       out << "    this->col_" << column.name << "[tid] = this->col_" << column.name << ".back();\n";
       out << "    this->col_" << column.name << ".pop_back();\n";
     }
-    out << "    this->primary_key_idx[std::make_tuple(";
-    generateList(out, table.primaryKey, [&](auto& out, auto& col){
-            out << "this->col_" << table.columns[col].name << ".back()";
-        });
-    out << ")] = tid;\n";
+    if(!table.primaryKey.empty()) {
+      out << "    this->primary_key_idx.erase(std::make_tuple(";
+      generateList(out, table.primaryKey, [&](auto& out, auto& col){
+              out << "this->col_" << table.columns[col].name << "[tid]";
+          });
+      out << "));\n";
+      out << "    this->primary_key_idx[std::make_tuple(";
+      generateList(out, table.primaryKey, [&](auto& out, auto& col){
+              out << "this->col_" << table.columns[col].name << ".back()";
+          });
+      out << ")] = tid;\n";
+    }
     out << "  }\n";
     //TODO: parse
     out << "}\n";
