@@ -7,7 +7,9 @@ optional<string> Parser::getNextToken() {
   const auto whitespace = string{" \t\n"};
   const auto seperators = string{" \t\n,)(;"};
   //ignore leading whitespace
-  while(in->good() && whitespace.find(in->peek()) != string::npos) in->ignore();
+  while(in->good() && whitespace.find(in->peek()) != string::npos) {
+    if(in->get() == '\n') lineno++;
+  }
   //parse the actual token
   string token;
   char firstChar;
@@ -144,7 +146,7 @@ void Parser::parseTableDescription(TableDescription* table) {
 //-------------------------------------------------------------------
 unique_ptr<Schema> Parser::parseSqlSchema(istream& inStream) {
   this->in = &inStream;
-  lineno = 0;
+  lineno = 1;
   auto schema = make_unique<Schema>();
   while(auto firstToken = getNextToken()) {
     if(*firstToken == "create") {
