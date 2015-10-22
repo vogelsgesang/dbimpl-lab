@@ -172,7 +172,8 @@ void Parser::parseIndexDescription(const Schema& schema, IndexDescription* index
   if(tableIter == schema.tables.cend()) {
     throw ParserError(lineno, string{"Unkown table: \""} + tableName + ")");
   }
-  index->table = tableIter - schema.tables.cbegin();
+  index->tableName = tableName;
+  index->tableNr = tableIter - schema.tables.cbegin();
   index->columns = parseColumnList(*tableIter);
 }
 //-------------------------------------------------------------------

@@ -34,7 +34,8 @@ struct TableDescription {
 
 struct IndexDescription {
   std::string name;
-  int table;
+  int tableNr;
+  std::string tableName;
   std::vector<unsigned> columns;
   IndexDescription(const std::string& name) : name(name) {}
 };

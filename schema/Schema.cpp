@@ -20,6 +20,16 @@ static std::string translateType(const DataType& type) {
   return stream.str();
 }
 
+template<typename T, typename Callable>
+static void generateList(std::ostream& out, const std::vector<T>& elements, Callable cb, std::string seperator = ", ") {
+  auto first = true;
+  for(const auto& elem : elements) {
+    if(!first) out << seperator;
+    cb(out, elem);
+    first = false;
+  }
+}
+
 void Schema::generateCppCode(std::ostream& out) {
   out <<
     "#ifndef H_Schema\n"
@@ -37,63 +47,54 @@ void Schema::generateCppCode(std::ostream& out) {
       out << "  std::vector<" << translateType(column.type) << "> col_" << column.name << ";\n";
     }
     // primary key index
-    bool first;
     if(!table.primaryKey.empty()) {
       out << "  std::unordered_map<std::tuple<";
-      first = true;
-      for(auto& pkColumn : table.primaryKey) {
-        auto& column = table.columns[pkColumn];
-        if(!first) out << ",";
-        out << translateType(column.type);
-        first = false;
-      }
+      generateList(out, table.primaryKey, [&](auto& out, auto& col){
+               out << translateType(table.columns[col].type);
+          });
       out << ">, size_t> primary_key_idx;\n";
     }
-    //insert
-    out << "  void insert_tuple(";
-    first = true;
-    for(auto& column : table.columns) {
-      if(!first) out << ",";
-      out << translateType(column.type) << " " << column.name;
-      first = false;
+    // additional idcs
+    for(auto& idx : indices) {
+      if(idx.tableName != table.name) continue;
+      out << "  std::map<std::tuple<";
+      generateList(out, idx.columns, [&](auto& out, auto& col){
+               out << translateType(table.columns[col].type);
+          });
+      out << ">, size_t> idx_" << idx.name << ";\n";
     }
+    // insert
+    //TODO: secondary indices
+    out << "  void insert_tuple(";
+    generateList(out, table.columns, [&](auto& out, auto& column){
+            out << translateType(column.type) << " " << column.name;
+        });
     out << ") {\n";
     for(auto& column : table.columns) {
       out << "    this->col_" << column.name << ".push_back(" << column.name << ");\n";
     }
     out << "    this->primary_key_idx.insert(std::make_pair(std::make_tuple(";
-    first = true;
-    for(auto& pkColumn : table.primaryKey) {
-      auto& column = table.columns[pkColumn];
-      if(!first) out << ",";
-      out << column.name;
-      first = false;
-    }
+    generateList(out, table.primaryKey, [&](auto& out, auto& col){
+            out << table.columns[col].name;
+        });
     out << "), this->col_" << table.columns[0].name << ".size()))\n";
     out << "  }\n";
-    //delete
+    // delete
+    //TODO: secondary indices
     out << "  void delete_tuple(size_t tid) {\n"
            "    this->primary_key_idx.erase(std::make_tuple(";
-    first = true;
-    for(auto& pkColumn : table.primaryKey) {
-      auto& column = table.columns[pkColumn];
-      if(!first) out << ",";
-      out << "this->col_" << column.name << "[tid]";
-      first = false;
-    }
+    generateList(out, table.primaryKey, [&](auto& out, auto& col){
+            out << "this->col_" << table.columns[col].name << "[tid]";
+        });
     out << "));\n";
     for(auto& column : table.columns) {
       out << "    this->col_" << column.name << "[tid] = this->col_" << column.name << ".back();\n";
       out << "    this->col_" << column.name << ".pop_back();\n";
     }
     out << "    this->primary_key_idx[std::make_tuple(";
-    first = true;
-    for(auto& pkColumn : table.primaryKey) {
-      auto& column = table.columns[pkColumn];
-      if(!first) out << ",";
-      out << "this->col_" << column.name << ".back()";
-      first = false;
-    }
+    generateList(out, table.primaryKey, [&](auto& out, auto& col){
+            out << "this->col_" << table.columns[col].name << ".back()";
+        });
     out << ")] = tid;\n";
     out << "  }\n";
     //TODO: parse
