@@ -8,16 +8,18 @@ optional<string> Parser::getNextToken() {
   const auto seperators = string{" \t\n,)(;"};
   //ignore leading whitespace
   while(in->good() && whitespace.find(in->peek()) != string::npos) in->ignore();
-  //make sure, the input stream did not reach its end yet
-  if(!in->good()) {
+  //parse the actual token
+  string token;
+  char firstChar;
+  if(!in->get(firstChar)) {
     return nullopt;
   }
-  //parse the actual token
-  ostringstream token_content;
-  do {
-    token_content << in->get();
-  } while(in->good() && seperators.find(in->peek()) != string::npos);
-  string token = token_content.str();
+  token.push_back(firstChar);
+  if(seperators.find(firstChar) == string::npos) {
+    while(in->good() && seperators.find(in->peek()) == string::npos) {
+      token.push_back(in->get());
+    }
+  }
   std::transform(token.begin(), token.end(), token.begin(), ::tolower);
   return token;
 }
@@ -64,7 +66,7 @@ string Parser::parseIdentifier() {
 //-------------------------------------------------------------------
 int Parser::parseInt() {
   auto token = expectToken();
-  if(token.find_first_not_of("0123456789") == std::string::npos) {
+  if(token.find_first_not_of("0123456789") != std::string::npos) {
     throw ParserError(lineno, string{"Expected an integer; found: \""} + token + "\"");
   }
   return std::atoi(token.c_str());
@@ -80,14 +82,15 @@ void Parser::parseTableDescriptionStatement(TableDescription* currentTable) {
     if(!primaryKey.empty()) {
       throw ParserError(lineno, "primary key already defined");
     }
-    std::string token = expectToken();
-    while(isIdentifier(token)) {
+    std::string trailingToken;
+    do {
+      std::string name = parseIdentifier();
       auto columnIdx = std::find_if(columns.begin(), columns.end(),
-                                    [&token](auto& e){return e.name == token;}) - columns.begin();
+                                    [&name](auto& e){return e.name == name;}) - columns.begin();
       currentTable->primaryKey.push_back(columnIdx);
-      expectToken(",");
-    }
-    if(token != ")") {
+      trailingToken = expectToken();
+    } while(trailingToken == ",");
+    if(trailingToken != ")") {
       throw ParserError(lineno, string{"expected \")\"; found: \""} + token + ")");
     }
   } else if(isIdentifier(token)) {
@@ -97,7 +100,7 @@ void Parser::parseTableDescriptionStatement(TableDescription* currentTable) {
     if(dataType == "integer") {
       currentColumn.type = DataType::Integer;
     } else if(dataType == "numeric") {
-      currentColumn.type = DataType::Integer;
+      currentColumn.type = DataType::Numeric;
       expectToken("(");
       currentColumn.typeAttributes.numeric.integerPlaces = parseInt();
       expectToken(",");
@@ -118,8 +121,11 @@ void Parser::parseTableDescriptionStatement(TableDescription* currentTable) {
     } else {
       throw ParserError(lineno, string{"expected a valid type name; found: "} + dataType);
     }
-    expectToken("not");
-    expectToken("null");
+    if(in->peek() != ',' && in->peek() != ')') {
+      expectToken("not");
+      expectToken("null");
+      currentColumn.notNull = true;
+    }
   }
 }
 //-------------------------------------------------------------------
@@ -133,7 +139,6 @@ void Parser::parseTableDescription(TableDescription* table) {
   if(token != ")") {
     throw ParserError(lineno, string{"expected \")\"; found: \""} + token + ")");
   }
-  expectToken(")");
   expectToken(";");
 }
 //-------------------------------------------------------------------
@@ -141,7 +146,7 @@ unique_ptr<Schema> Parser::parseSqlSchema(istream& inStream) {
   this->in = &inStream;
   lineno = 0;
   auto schema = make_unique<Schema>();
-  while(auto firstToken= getNextToken()) {
+  while(auto firstToken = getNextToken()) {
     if(*firstToken == "create") {
       expectToken("table");
       schema->tables.emplace_back(parseIdentifier());

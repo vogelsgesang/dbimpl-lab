@@ -18,7 +18,7 @@ TEST(SchemaParserTest, parsesValidSchemaDefinitions) {
       "CREATE TABLE test1 ("
       "  attr1 integer,"
       "  attr2 INTEGER,"
-      "  attr3 Numeric(9, 2)"
+      "  attr3 Numeric(9, 2),"
       "  attr4 CHAR(1),"
       "  attr5 VarCHAR(10) not NULL,"
       "  PRIMARY key (attr2, attr4)"
@@ -48,9 +48,9 @@ TEST(SchemaParserTest, parsesValidSchemaDefinitions) {
 
     EXPECT_EQ(std::string("attr3"), schema->tables[0].columns[2].name);
     EXPECT_EQ(DataType::Numeric,    schema->tables[0].columns[2].type);
-    EXPECT_EQ(9,                    schema->tables[0].columns[4].typeAttributes.numeric.integerPlaces);
-    EXPECT_EQ(2,                    schema->tables[0].columns[4].typeAttributes.numeric.decimalPlaces);
-    EXPECT_TRUE(                    schema->tables[0].columns[2].notNull);
+    EXPECT_EQ(9,                    schema->tables[0].columns[2].typeAttributes.numeric.integerPlaces);
+    EXPECT_EQ(2,                    schema->tables[0].columns[2].typeAttributes.numeric.decimalPlaces);
+    EXPECT_FALSE(                    schema->tables[0].columns[2].notNull);
 
     EXPECT_EQ(std::string("attr4"), schema->tables[0].columns[3].name);
     EXPECT_EQ(DataType::Char,       schema->tables[0].columns[3].type);
