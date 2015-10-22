@@ -164,17 +164,19 @@ void Parser::parseTableDescription(TableDescription* table) {
   }
 }
 //-------------------------------------------------------------------
-void Parser::parseIndexDescription(const Schema& schema, IndexDescription* index) {
+void Parser::parseIndexDescription(Schema* schema) {
+  auto idxName = parseIdentifier();
   expectToken("on");
-  std::string tableName = parseIdentifier();
-  auto tableIter = std::find_if(schema.tables.begin(), schema.tables.end(),
+  auto tableName = parseIdentifier();
+  auto tableIter = std::find_if(schema->tables.begin(), schema->tables.end(),
                                 [&tableName](auto& e){return e.name == tableName;});
-  if(tableIter == schema.tables.cend()) {
+  if(tableIter == schema->tables.cend()) {
     throw ParserError(lineno, string{"Unkown table: \""} + tableName + ")");
   }
-  index->tableName = tableName;
-  index->tableNr = tableIter - schema.tables.cbegin();
-  index->columns = parseColumnList(*tableIter);
+  auto& table = *tableIter;
+  table.indices.emplace_back(idxName);
+  auto& index = table.indices.back();
+  index.columns = parseColumnList(table);
 }
 //-------------------------------------------------------------------
 unique_ptr<Schema> Parser::parseSqlSchema(istream& inStream) {
@@ -188,8 +190,7 @@ unique_ptr<Schema> Parser::parseSqlSchema(istream& inStream) {
         schema->tables.emplace_back(parseIdentifier());
         parseTableDescription(&schema->tables.back());
       } else if(secondToken == "index") {
-        schema->indices.emplace_back(parseIdentifier());
-        parseIndexDescription(*schema, &schema->indices.back());
+        parseIndexDescription(schema.get());
       } else {
         throw ParserError(lineno, string{"expected \"Table\" or \"index\"; found: \""} + secondToken + "\"");
       }

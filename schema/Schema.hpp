@@ -25,19 +25,18 @@ struct ColumnDescription {
   ColumnDescription(const std::string& name) : name(name), notNull(false) {}
 };
 
+struct IndexDescription {
+  std::string name;
+  std::vector<unsigned> columns;
+  IndexDescription(const std::string& name) : name(name) {}
+};
+
 struct TableDescription {
   std::string name;
   std::vector<ColumnDescription> columns;
   std::vector<unsigned> primaryKey;
+  std::vector<IndexDescription> indices;
   TableDescription(const std::string& name) : name(name) {}
-};
-
-struct IndexDescription {
-  std::string name;
-  int tableNr;
-  std::string tableName;
-  std::vector<unsigned> columns;
-  IndexDescription(const std::string& name) : name(name) {}
 };
 
 struct Schema {

@@ -99,10 +99,9 @@ TEST(SchemaParserTest, parsesIndexDefinitions) {
     EXPECT_EQ(std::string("attr2"), schema->tables[0].columns[1].name);
     EXPECT_EQ(std::string("attr3"), schema->tables[0].columns[2].name);
 
-    ASSERT_EQ(1, schema->indices.size());
-    ASSERT_EQ(0, schema->indices[0].tableNr);
-    ASSERT_EQ(0, schema->indices[0].columns[0]);
-    ASSERT_EQ(2, schema->indices[0].columns[1]);
+    ASSERT_EQ(1, schema->tables[0].indices.size());
+    ASSERT_EQ(0, schema->tables[0].indices[0].columns[0]);
+    ASSERT_EQ(2, schema->tables[0].indices[0].columns[1]);
   } catch(ParserError& e) {
     std::cout << e.what() << std::endl;
     FAIL();

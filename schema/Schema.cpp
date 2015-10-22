@@ -55,8 +55,7 @@ void Schema::generateCppCode(std::ostream& out) {
       out << ">, size_t> primary_key_idx;\n";
     }
     // additional idcs
-    for(auto& idx : indices) {
-      if(idx.tableName != table.name) continue;
+    for(auto& idx : table.indices) {
       out << "  std::map<std::tuple<";
       generateList(out, idx.columns, [&](auto& out, auto& col){
                out << translateType(table.columns[col].type);
@@ -79,8 +78,7 @@ void Schema::generateCppCode(std::ostream& out) {
           });
       out << "), this->col_" << table.columns[0].name << ".size()))\n";
     }
-    for(auto& idx : indices) {
-      if(idx.tableName != table.name) continue;
+    for(auto& idx : table.indices) {
       out << "    this->idx_" << idx.name << ".insert(std::make_pair(std::make_tuple(";
       generateList(out, idx.columns, [&](auto& out, auto& col){
                out << table.columns[col].name;
@@ -106,8 +104,7 @@ void Schema::generateCppCode(std::ostream& out) {
           });
       out << ")] = tid;\n";
     }
-    for(auto& idx : indices) {
-      if(idx.tableName != table.name) continue;
+    for(auto& idx : table.indices) {
       out << "    this->idx_" << idx.name << ".erase(std::make_tuple(";
       generateList(out, idx.columns, [&](auto& out, auto& col){
                out << "this->col_" << table.columns[col].name << "[tid]";
