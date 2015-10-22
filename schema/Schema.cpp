@@ -64,7 +64,6 @@ void Schema::generateCppCode(std::ostream& out) {
       out << ">, size_t> idx_" << idx.name << ";\n";
     }
     // insert
-    //TODO: secondary indices
     out << "  void insert_tuple(";
     generateList(out, table.columns, [&](auto& out, auto& column){
             out << translateType(column.type) << " " << column.name;
@@ -80,9 +79,16 @@ void Schema::generateCppCode(std::ostream& out) {
           });
       out << "), this->col_" << table.columns[0].name << ".size()))\n";
     }
+    for(auto& idx : indices) {
+      if(idx.tableName != table.name) continue;
+      out << "    this->idx_" << idx.name << ".insert(std::make_pair(std::make_tuple(";
+      generateList(out, idx.columns, [&](auto& out, auto& col){
+               out << table.columns[col].name;
+          });
+      out << "), this->col_" << table.columns[0].name << ".size()))\n";
+    }
     out << "  }\n";
     // delete
-    //TODO: secondary indices
     out << "  void delete_tuple(size_t tid) {\n";
     for(auto& column : table.columns) {
       out << "    this->col_" << column.name << "[tid] = this->col_" << column.name << ".back();\n";
@@ -96,6 +102,19 @@ void Schema::generateCppCode(std::ostream& out) {
       out << "));\n";
       out << "    this->primary_key_idx[std::make_tuple(";
       generateList(out, table.primaryKey, [&](auto& out, auto& col){
+              out << "this->col_" << table.columns[col].name << ".back()";
+          });
+      out << ")] = tid;\n";
+    }
+    for(auto& idx : indices) {
+      if(idx.tableName != table.name) continue;
+      out << "    this->idx_" << idx.name << ".erase(std::make_tuple(";
+      generateList(out, idx.columns, [&](auto& out, auto& col){
+               out << "this->col_" << table.columns[col].name << "[tid]";
+          });
+      out << "));\n";
+      out << "    this->primary_key_idx[std::make_tuple(";
+      generateList(out, idx.columns, [&](auto& out, auto& col){
               out << "this->col_" << table.columns[col].name << ".back()";
           });
       out << ")] = tid;\n";
