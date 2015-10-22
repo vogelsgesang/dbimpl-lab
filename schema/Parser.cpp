@@ -5,7 +5,7 @@ using namespace std::experimental;
 //-------------------------------------------------------------------
 optional<string> Parser::getNextToken() {
   const auto whitespace = string{" \t\n"};
-  const auto seperators = string{" \t\n,)(;"};
+  const auto seperators = string{" \t\n,)(;\""};
   //ignore leading whitespace
   while(in->good() && whitespace.find(in->peek()) != string::npos) {
     if(in->get() == '\n') lineno++;
@@ -16,13 +16,19 @@ optional<string> Parser::getNextToken() {
   if(!in->get(firstChar)) {
     return nullopt;
   }
-  token.push_back(firstChar);
-  if(seperators.find(firstChar) == string::npos) {
-    while(in->good() && seperators.find(in->peek()) == string::npos) {
-      token.push_back(in->get());
+  if(firstChar == '"') {
+    while(in->get(firstChar) && firstChar != '"') {
+      token.push_back(firstChar);
     }
+  } else {
+    token.push_back(firstChar);
+    if(seperators.find(firstChar) == string::npos) {
+      while(in->good() && seperators.find(in->peek()) == string::npos) {
+        token.push_back(in->get());
+      }
+    }
+    std::transform(token.begin(), token.end(), token.begin(), ::tolower);
   }
-  std::transform(token.begin(), token.end(), token.begin(), ::tolower);
   return token;
 }
 //-------------------------------------------------------------------
