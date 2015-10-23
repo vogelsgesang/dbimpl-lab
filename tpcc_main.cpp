@@ -45,7 +45,9 @@ int main() {
   auto iterations = 1'000'000;
   for(int i = 0; i < iterations; i++) {
     newOrderRandom(tables.get(), Timestamp(), 1);
+    #ifdef DEBUG
     if((i & 0xfff) == 0) std::cout << "." << std::flush;
+    #endif
   }
   std::cout << std::endl
             << "order table size " << tables->order.col_o_id.size() << "\n"
