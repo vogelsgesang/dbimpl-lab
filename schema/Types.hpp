@@ -512,12 +512,26 @@ uint64_t Timestamp::hash() const
    return (r^=(r<<17));
 }
 //---------------------------------------------------------------------------
-template<class T> inline uint64_t hashKey(T x) {
-   return x.hash();
-}
-//---------------------------------------------------------------------------
-template<typename T, typename... Args> inline uint64_t hashKey(T first,Args... args) {
-   return first.hash() ^ hashKey(args...);
+namespace std {
+  template<> struct hash<Integer> {
+    size_t operator()(const Integer& t) { return t.hash(); }
+  };
+  template<unsigned maxLen> struct hash<Varchar<maxLen>> {
+    size_t operator()(const Varchar<maxLen>& t) { return t.hash(); }
+  };
+  template<unsigned maxLen> struct hash<Char<maxLen>> {
+    size_t operator()(const Char<maxLen>& t) { return t.hash(); }
+  };
+  template <unsigned len,unsigned precision>
+  struct hash<Numeric<len, precision>> {
+    size_t operator()(const Numeric<len, precision>& t) { return t.hash(); }
+  };
+  template<> struct hash<Date> {
+    size_t operator()(const Date& t) { return t.hash(); }
+  };
+  template<> struct hash<Timestamp> {
+    size_t operator()(const Timestamp& t) { return t.hash(); }
+  };
 }
 //---------------------------------------------------------------------------
 #endif

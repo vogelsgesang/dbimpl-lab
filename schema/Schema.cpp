@@ -38,6 +38,7 @@ void Schema::generateCppCode(std::ostream& out) {
     "#include <map>\n"
     "#include <unordered_map>\n"
     "#include <istream>\n"
+    "#include \"utils/tupleHash.hpp\"\n"
     "#include \"schema/Types.hpp\"\n";
   for(auto& table : tables) {
     out << "//--------------------------------------------------\n"
