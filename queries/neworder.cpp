@@ -1,5 +1,4 @@
 #include "neworder.hpp"
-#include <algorithm>
 
 void newOrder(table_data* tables, int32_t w_id, int32_t d_id, int32_t c_id, int32_t items, int32_t supware[15], int32_t itemid[15], int32_t qty[15], Timestamp datetime) {
   // select w_tax from warehouse w where w.w_id=w_id;
@@ -97,7 +96,7 @@ void newOrder(table_data* tables, int32_t w_id, int32_t d_id, int32_t c_id, int3
     }
 
     // var numeric(6,2) ol_amount=qty[index]*i_price*(1.0+w_tax+d_tax)*(1.0-c_discount);
-    auto ol_amount = Numeric<6,2>{Numeric<6,2>{qty[index]}*Numeric<6,2>{i_price}*Numeric<6,4>{(Numeric<4,4>(10000)-c_discount) * (Numeric<4,4>(10000)+w_tax+d_tax)}};
+    auto ol_amount = Numeric<6,2>{Numeric<6,2>{qty[index]}*Numeric<6,2>{i_price}*Numeric<6,4>{(Numeric<4,4>(1)-c_discount) * (Numeric<4,4>(1)+w_tax+d_tax)}};
     // insert into orderline values (o_id,d_id,w_id,index+1,itemid[index],supware[index],0,qty[index],ol_amount,s_dist);
     tables->orderline.insert_tuple(o_id, d_id, w_id, index+1, itemid[index], supware[index], 0, qty[index], ol_amount, s_dist);
   }

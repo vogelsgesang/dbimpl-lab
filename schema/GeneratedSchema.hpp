@@ -574,7 +574,7 @@ struct neworder_t {
   std::vector<Integer> col_no_o_id;
   std::vector<Integer> col_no_d_id;
   std::vector<Integer> col_no_w_id;
-  std::unordered_map<std::tuple<Integer, Integer, Integer>, size_t> primary_key_idx;
+  std::map<std::tuple<Integer, Integer, Integer>, size_t> primary_key_idx;
   void insert_tuple(Integer no_o_id, Integer no_d_id, Integer no_w_id) {
     this->col_no_o_id.push_back(no_o_id);
     this->col_no_d_id.push_back(no_d_id);
@@ -615,7 +615,6 @@ struct neworder_t {
       if(nextChar != '\n') throw "expected end of line";
     }
     auto table_size = this->col_no_o_id.size();
-    this->primary_key_idx.reserve(table_size);
     for(size_t i = 0; i < table_size; i++) {
       this->primary_key_idx.insert(std::make_pair(std::make_tuple(this->col_no_w_id[i], this->col_no_d_id[i], this->col_no_o_id[i]), i));
     }

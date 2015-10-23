@@ -264,7 +264,9 @@ public:
 
    Numeric() : value(0) {}
    Numeric(Integer x) : value(x.value*numericShifts[precision]) {}
-   Numeric(int64_t x) : value(x) {}
+   Numeric(int64_t x) : value(x*numericShifts[precision]) {}
+
+   int64_t getInteger() {return value / numericShifts[precision];}
 
    // copy construction
    /// implicit copy construction if both length and precision are increased

@@ -5,6 +5,7 @@
 #include "schema/GeneratedSchema.hpp"
 #include "schema/Types.hpp"
 #include "queries/neworderrandom.hpp"
+#include "queries/delivery.hpp"
 
 using namespace std;
 
@@ -32,28 +33,33 @@ int main() {
     std::cout << "." << std::flush;
     tables->stock.loadFromTbl(std::ifstream((data_folder + "tpcc_stock.tbl").c_str()));
     std::cout << "." << std::flush;
+
+    std::cout << std::endl
+              << "order table size " << tables->order.col_o_id.size() << "\n"
+              << "neworder table size " << tables->neworder.col_no_o_id.size() << "\n"
+              << "orderline table size " << tables->orderline.col_ol_o_id.size() << "\n";
+    std::cout << "tpcc benchmark" << std::endl;
+    clock_t begin_time = clock();
+    auto iterations = 1'000'000;
+    for(int i = 0; i < iterations; i++) {
+      if(random()%10) {
+        newOrderRandom(tables.get(), Timestamp(), random()%5+1);
+      } else {
+        delivery(tables.get(), random()%5+1, 0, Timestamp());
+      }
+      #ifdef DEBUG
+      if((i & 0xfff) == 0) std::cout << "." << std::flush;
+      #endif
+    }
+    std::cout << std::endl
+              << "order table size " << tables->order.col_o_id.size() << "\n"
+              << "neworder table size " << tables->neworder.col_no_o_id.size() << "\n"
+              << "orderline table size " << tables->orderline.col_ol_o_id.size() << "\n";
+    clock_t end_time = clock();
+    double elapsed_secs = double(end_time - begin_time) / CLOCKS_PER_SEC;
+    std::cout << (iterations / elapsed_secs) << " transactions per seconds" << std::endl;
   } catch(const char* e) {
-    std::cout << e << std::endl;
+    std::cout << "ERROR: " << e << std::endl;
     return -1;
   }
-  std::cout << std::endl
-            << "order table size " << tables->order.col_o_id.size() << "\n"
-            << "neworder table size " << tables->neworder.col_no_o_id.size() << "\n"
-            << "orderline table size " << tables->orderline.col_ol_o_id.size() << "\n";
-  std::cout << "tpcc benchmark" << std::endl;
-  clock_t begin_time = clock();
-  auto iterations = 1'000'000;
-  for(int i = 0; i < iterations; i++) {
-    newOrderRandom(tables.get(), Timestamp(), 1);
-    #ifdef DEBUG
-    if((i & 0xfff) == 0) std::cout << "." << std::flush;
-    #endif
-  }
-  std::cout << std::endl
-            << "order table size " << tables->order.col_o_id.size() << "\n"
-            << "neworder table size " << tables->neworder.col_no_o_id.size() << "\n"
-            << "orderline table size " << tables->orderline.col_ol_o_id.size() << "\n";
-  clock_t end_time = clock();
-  double elapsed_secs = double(end_time - begin_time) / CLOCKS_PER_SEC;
-  std::cout << (iterations / elapsed_secs) << " transactions per seconds" << std::endl;
 }

@@ -53,7 +53,7 @@ bin/generate_schema$(BIN_SUFFIX): $(addprefix $(OBJ_DIR)/, $(GENERATE_SCHEMA_OBJ
 	@mkdir -p $(dir $@)
 	$(CXX) $(LDFLAGS) $(filter-out tests, $^) $(LDLIBS) -o $@
 
-TPCC_OBJS=tpcc_main.o schema/Types.o schema/Parser.o queries/neworderrandom.o queries/neworder.o
+TPCC_OBJS=tpcc_main.o schema/Types.o schema/Parser.o queries/neworderrandom.o queries/neworder.o queries/delivery.o
 bin/tpcc$(BIN_SUFFIX): $(addprefix $(OBJ_DIR)/, $(TPCC_OBJS))
 	@mkdir -p $(dir $@)
 	$(CXX) $(LDFLAGS) $(filter-out tests, $^) $(LDLIBS) -o $@
