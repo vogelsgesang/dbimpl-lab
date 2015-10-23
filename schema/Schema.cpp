@@ -125,15 +125,15 @@ void Schema::generateCppCode(std::ostream& out) {
     // loadFromTbl
     out << "  void loadFromTbl(std::istream& in) {\n"
         << "    std::string buffer;\n"
-        << "    char nextChar;\n"
-        << "    while(in.good()) {\n";
+        << "    int nextChar;\n"
+        << "    while(in.peek() != std::char_traits<char>::eof()) {\n";
     bool first = true;
     for(auto& col : table.columns) {
-      if(!first) out << "      if(nextChar == '\\n') throw \"unexpected end of line\";\n";
+      if(!first) out << "      if(nextChar != '|') throw \"unexpected end of row\";\n";
       first = false;
       out << "      buffer.clear();\n"
-             "      nextChar = in.peek();\n"
-             "      while(nextChar != '|' && nextChar != '\\n') { buffer.push_back(nextChar); nextChar = in.get(); }\n"
+             "      nextChar = in.get();\n"
+             "      while(nextChar != '|' && nextChar != '\\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }\n"
              "      this->col_" << col.name << ".push_back(" << translateType(col.type) << "::castString(buffer.c_str(), buffer.size()));\n";
     }
     out << "      if(nextChar != '\\n') throw \"expected end of line\";\n";

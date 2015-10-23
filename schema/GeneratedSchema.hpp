@@ -56,51 +56,51 @@ struct warehouse_t {
   }
   void loadFromTbl(std::istream& in) {
     std::string buffer;
-    char nextChar;
-    while(in.good()) {
+    int nextChar;
+    while(in.peek() != std::char_traits<char>::eof()) {
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_w_id.push_back(Integer::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_w_name.push_back(Varchar<10>::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_w_street_1.push_back(Varchar<20>::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_w_street_2.push_back(Varchar<20>::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_w_city.push_back(Varchar<20>::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_w_state.push_back(Char<2>::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_w_zip.push_back(Char<9>::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_w_tax.push_back(Numeric<4,4>::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_w_ytd.push_back(Numeric<12,2>::castString(buffer.c_str(), buffer.size()));
       if(nextChar != '\n') throw "expected end of line";
     }
@@ -170,61 +170,61 @@ struct district_t {
   }
   void loadFromTbl(std::istream& in) {
     std::string buffer;
-    char nextChar;
-    while(in.good()) {
+    int nextChar;
+    while(in.peek() != std::char_traits<char>::eof()) {
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_d_id.push_back(Integer::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_d_w_id.push_back(Integer::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_d_name.push_back(Varchar<10>::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_d_street_1.push_back(Varchar<20>::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_d_street_2.push_back(Varchar<20>::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_d_city.push_back(Varchar<20>::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_d_state.push_back(Char<2>::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_d_zip.push_back(Char<9>::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_d_tax.push_back(Numeric<4,4>::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_d_ytd.push_back(Numeric<12,2>::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_d_next_o_id.push_back(Integer::castString(buffer.c_str(), buffer.size()));
       if(nextChar != '\n') throw "expected end of line";
     }
@@ -338,111 +338,111 @@ struct customer_t {
   }
   void loadFromTbl(std::istream& in) {
     std::string buffer;
-    char nextChar;
-    while(in.good()) {
+    int nextChar;
+    while(in.peek() != std::char_traits<char>::eof()) {
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_c_id.push_back(Integer::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_c_d_id.push_back(Integer::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_c_w_id.push_back(Integer::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_c_first.push_back(Varchar<16>::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_c_middle.push_back(Char<2>::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_c_last.push_back(Varchar<16>::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_c_street_1.push_back(Varchar<20>::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_c_street_2.push_back(Varchar<20>::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_c_city.push_back(Varchar<20>::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_c_state.push_back(Char<2>::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_c_zip.push_back(Char<9>::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_c_phone.push_back(Char<16>::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_c_since.push_back(Timestamp::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_c_credit.push_back(Char<2>::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_c_credit_lim.push_back(Numeric<12,2>::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_c_discount.push_back(Numeric<4,4>::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_c_balance.push_back(Numeric<12,2>::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_c_ytd_paymenr.push_back(Numeric<12,2>::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_c_payment_cnt.push_back(Numeric<4,0>::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_c_delivery_cnt.push_back(Numeric<4,0>::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_c_data.push_back(Varchar<244>::castString(buffer.c_str(), buffer.size()));
       if(nextChar != '\n') throw "expected end of line";
     }
@@ -498,46 +498,46 @@ struct history_t {
   }
   void loadFromTbl(std::istream& in) {
     std::string buffer;
-    char nextChar;
-    while(in.good()) {
+    int nextChar;
+    while(in.peek() != std::char_traits<char>::eof()) {
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_h_c_id.push_back(Integer::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_h_c_d_id.push_back(Integer::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_h_c_w_id.push_back(Integer::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_h_d_id.push_back(Integer::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_h_w_id.push_back(Integer::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_h_date.push_back(Timestamp::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_h_amount.push_back(Numeric<6,2>::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_h_data.push_back(Varchar<24>::castString(buffer.c_str(), buffer.size()));
       if(nextChar != '\n') throw "expected end of line";
     }
@@ -573,21 +573,21 @@ struct neworder_t {
   }
   void loadFromTbl(std::istream& in) {
     std::string buffer;
-    char nextChar;
-    while(in.good()) {
+    int nextChar;
+    while(in.peek() != std::char_traits<char>::eof()) {
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_no_o_id.push_back(Integer::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_no_d_id.push_back(Integer::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_no_w_id.push_back(Integer::castString(buffer.c_str(), buffer.size()));
       if(nextChar != '\n') throw "expected end of line";
     }
@@ -649,46 +649,46 @@ struct order_t {
   }
   void loadFromTbl(std::istream& in) {
     std::string buffer;
-    char nextChar;
-    while(in.good()) {
+    int nextChar;
+    while(in.peek() != std::char_traits<char>::eof()) {
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_o_id.push_back(Integer::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_o_d_id.push_back(Integer::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_o_w_id.push_back(Integer::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_o_c_id.push_back(Integer::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_o_entry_d.push_back(Timestamp::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_o_carrier_id.push_back(Integer::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_o_ol_cnt.push_back(Numeric<2,0>::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_o_all_local.push_back(Numeric<1,0>::castString(buffer.c_str(), buffer.size()));
       if(nextChar != '\n') throw "expected end of line";
     }
@@ -756,56 +756,56 @@ struct orderline_t {
   }
   void loadFromTbl(std::istream& in) {
     std::string buffer;
-    char nextChar;
-    while(in.good()) {
+    int nextChar;
+    while(in.peek() != std::char_traits<char>::eof()) {
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_ol_o_id.push_back(Integer::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_ol_d_id.push_back(Integer::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_ol_w_id.push_back(Integer::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_ol_number.push_back(Integer::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_ol_i_id.push_back(Integer::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_ol_supply_w_id.push_back(Integer::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_ol_delivery_d.push_back(Timestamp::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_ol_quantity.push_back(Numeric<2,0>::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_ol_amount.push_back(Numeric<6,2>::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_ol_dist_info.push_back(Char<24>::castString(buffer.c_str(), buffer.size()));
       if(nextChar != '\n') throw "expected end of line";
     }
@@ -851,31 +851,31 @@ struct item_t {
   }
   void loadFromTbl(std::istream& in) {
     std::string buffer;
-    char nextChar;
-    while(in.good()) {
+    int nextChar;
+    while(in.peek() != std::char_traits<char>::eof()) {
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_i_id.push_back(Integer::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_i_im_id.push_back(Integer::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_i_name.push_back(Varchar<24>::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_i_price.push_back(Numeric<5,2>::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_i_data.push_back(Varchar<50>::castString(buffer.c_str(), buffer.size()));
       if(nextChar != '\n') throw "expected end of line";
     }
@@ -969,91 +969,91 @@ struct stock_t {
   }
   void loadFromTbl(std::istream& in) {
     std::string buffer;
-    char nextChar;
-    while(in.good()) {
+    int nextChar;
+    while(in.peek() != std::char_traits<char>::eof()) {
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_s_i_id.push_back(Integer::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_s_w_id.push_back(Integer::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_s_quantity.push_back(Numeric<4,0>::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_s_dist_01.push_back(Char<24>::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_s_dist_02.push_back(Char<24>::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_s_dist_03.push_back(Char<24>::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_s_dist_04.push_back(Char<24>::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_s_dist_05.push_back(Char<24>::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_s_dist_06.push_back(Char<24>::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_s_dist_07.push_back(Char<24>::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_s_dist_08.push_back(Char<24>::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_s_dist_09.push_back(Char<24>::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_s_dist_10.push_back(Char<24>::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_s_ytd.push_back(Numeric<8,0>::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_s_order_cnt.push_back(Numeric<4,0>::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_s_remote_cnt.push_back(Numeric<4,0>::castString(buffer.c_str(), buffer.size()));
-      if(nextChar == '\n') throw "unexpected end of line";
+      if(nextChar != '|') throw "unexpected end of row";
       buffer.clear();
-      nextChar = in.peek();
-      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      nextChar = in.get();
+      while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
       this->col_s_data.push_back(Varchar<50>::castString(buffer.c_str(), buffer.size()));
       if(nextChar != '\n') throw "expected end of line";
     }
