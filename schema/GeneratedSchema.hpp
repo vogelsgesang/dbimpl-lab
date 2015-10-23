@@ -1,937 +1,1084 @@
 #ifndef H_Schema
 #define H_Schema
-#include <iterator>
 #include <vector>
-#include <tuple>
-#include "Types.hpp"
-//-----------------------------------------------------------------------------
+#include <map>
+#include <unordered_map>
+#include <istream>
+#include "utils/tupleHash.hpp"
+#include "schema/Types.hpp"
+//--------------------------------------------------
+namespace tables {
+//--------------------------------------------------
 struct warehouse_t {
-  typedef std::tuple<
-    std::vector<Integer>, //w_id
-    std::vector<Varchar<10>>, //w_name
-    std::vector<Varchar<20>>, //w_street_1
-    std::vector<Varchar<20>>, //w_street_2
-    std::vector<Varchar<20>>, //w_city
-    std::vector<Char<2>>, //w_state
-    std::vector<Char<9>>, //w_zip
-    std::vector<Numeric<4,4>>, //w_tax
-    std::vector<Numeric<12,2>> //w_ytd
-  > storage_type;
-
-  auto size() {return std::get<0>(data).size();}
-
-  auto& w_id() { return std::get<0>(data); }
-  const auto& w_id() const { return std::get<0>(data); }
-  auto& w_name() { return std::get<1>(data); }
-  const auto& w_name() const { return std::get<1>(data); }
-  auto& w_street_1() { return std::get<2>(data); }
-  const auto& w_street_1() const { return std::get<2>(data); }
-  auto& w_street_2() { return std::get<3>(data); }
-  const auto& w_street_2() const { return std::get<3>(data); }
-  auto& w_city() { return std::get<4>(data); }
-  const auto& w_city() const { return std::get<4>(data); }
-  auto& w_state() { return std::get<5>(data); }
-  const auto& w_state() const { return std::get<5>(data); }
-  auto& w_zip() { return std::get<6>(data); }
-  const auto& w_zip() const { return std::get<6>(data); }
-  auto& w_tax() { return std::get<7>(data); }
-  const auto& w_tax() const { return std::get<7>(data); }
-  auto& w_ytd() { return std::get<8>(data); }
-  const auto& w_ytd() const { return std::get<8>(data); }
-  
-
-  class dereferenced_iterator {
-    public:
-      dereferenced_iterator(storage_type &data, size_t offset) : data(data), offset(offset) {}
-
-      auto& w_id() { return std::get<0>(data)[offset]; }
-      const auto& w_id() const { return std::get<0>(data)[offset]; }
-      auto& w_name() { return std::get<1>(data)[offset]; }
-      const auto& w_name() const { return std::get<1>(data)[offset]; }
-      auto& w_street_1() { return std::get<2>(data)[offset]; }
-      const auto& w_street_1() const { return std::get<2>(data)[offset]; }
-      auto& w_street_2() { return std::get<3>(data)[offset]; }
-      const auto& w_street_2() const { return std::get<3>(data)[offset]; }
-      auto& w_city() { return std::get<4>(data)[offset]; }
-      const auto& w_city() const { return std::get<4>(data)[offset]; }
-      auto& w_state() { return std::get<5>(data)[offset]; }
-      const auto& w_state() const { return std::get<5>(data)[offset]; }
-      auto& w_zip() { return std::get<6>(data)[offset]; }
-      const auto& w_zip() const { return std::get<6>(data)[offset]; }
-      auto& w_tax() { return std::get<7>(data)[offset]; }
-      const auto& w_tax() const { return std::get<7>(data)[offset]; }
-      auto& w_ytd() { return std::get<8>(data)[offset]; }
-      const auto& w_ytd() const { return std::get<8>(data)[offset]; }
-      
-    private:
-      storage_type &data;
-      size_t offset;
-  };
-
-  class iterator {
-    public:
-      typedef std::input_iterator_tag iterator_category; // actually not an input iterator. But this is the best fitting category
-      typedef dereferenced_iterator reference;
-      typedef dereferenced_iterator* pointer;
-      typedef dereferenced_iterator value_type;
-      typedef size_t difference_type;
-
-      iterator(storage_type &data, size_t offset) : data(data), offset(offset) {}
-
-      iterator& operator++() {++offset; return *this;}
-      iterator operator++(int) {auto copy = *this; offset++; return copy;}
-      iterator& operator--() {--offset; return *this;}
-      iterator operator--(int) {auto copy = *this; offset--; return copy;}
-
-      bool operator==(const iterator& rhs) const {return &data == &rhs.data && offset == rhs.offset;}
-      bool operator!=(const iterator& rhs) const {return !(*this == rhs);}
-
-      size_t operator-(const iterator& rhs) const {return offset - rhs.offset;}
-
-      auto operator*() { return dereferenced_iterator{data, offset}; }
-
-    private:
-      storage_type &data;
-      size_t offset;
-  };
-
-  auto begin() {return iterator{data, 0};}
-  auto end() {return iterator{data, size()};}
-
-  storage_type data;
+  std::vector<Integer> col_w_id;
+  std::vector<Varchar<10>> col_w_name;
+  std::vector<Varchar<20>> col_w_street_1;
+  std::vector<Varchar<20>> col_w_street_2;
+  std::vector<Varchar<20>> col_w_city;
+  std::vector<Char<2>> col_w_state;
+  std::vector<Char<9>> col_w_zip;
+  std::vector<Numeric<4,4>> col_w_tax;
+  std::vector<Numeric<12,2>> col_w_ytd;
+  std::unordered_map<std::tuple<Integer>, size_t> primary_key_idx;
+  void insert_tuple(Integer w_id, Varchar<10> w_name, Varchar<20> w_street_1, Varchar<20> w_street_2, Varchar<20> w_city, Char<2> w_state, Char<9> w_zip, Numeric<4,4> w_tax, Numeric<12,2> w_ytd) {
+    this->col_w_id.push_back(w_id);
+    this->col_w_name.push_back(w_name);
+    this->col_w_street_1.push_back(w_street_1);
+    this->col_w_street_2.push_back(w_street_2);
+    this->col_w_city.push_back(w_city);
+    this->col_w_state.push_back(w_state);
+    this->col_w_zip.push_back(w_zip);
+    this->col_w_tax.push_back(w_tax);
+    this->col_w_ytd.push_back(w_ytd);
+    this->primary_key_idx.insert(std::make_pair(std::make_tuple(w_id), this->col_w_id.size()));
+  }
+  void delete_tuple(size_t tid) {
+    this->primary_key_idx.erase(this->primary_key_idx.find(std::make_tuple(this->col_w_id[tid])));
+    this->primary_key_idx[std::make_tuple(this->col_w_id.back())] = tid;
+    this->col_w_id[tid] = this->col_w_id.back();
+    this->col_w_id.pop_back();
+    this->col_w_name[tid] = this->col_w_name.back();
+    this->col_w_name.pop_back();
+    this->col_w_street_1[tid] = this->col_w_street_1.back();
+    this->col_w_street_1.pop_back();
+    this->col_w_street_2[tid] = this->col_w_street_2.back();
+    this->col_w_street_2.pop_back();
+    this->col_w_city[tid] = this->col_w_city.back();
+    this->col_w_city.pop_back();
+    this->col_w_state[tid] = this->col_w_state.back();
+    this->col_w_state.pop_back();
+    this->col_w_zip[tid] = this->col_w_zip.back();
+    this->col_w_zip.pop_back();
+    this->col_w_tax[tid] = this->col_w_tax.back();
+    this->col_w_tax.pop_back();
+    this->col_w_ytd[tid] = this->col_w_ytd.back();
+    this->col_w_ytd.pop_back();
+  }
+  void loadFromTbl(std::istream& in) {
+    std::string buffer;
+    char nextChar;
+    while(in.good()) {
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_w_id.push_back(Integer::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_w_name.push_back(Varchar<10>::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_w_street_1.push_back(Varchar<20>::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_w_street_2.push_back(Varchar<20>::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_w_city.push_back(Varchar<20>::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_w_state.push_back(Char<2>::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_w_zip.push_back(Char<9>::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_w_tax.push_back(Numeric<4,4>::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_w_ytd.push_back(Numeric<12,2>::castString(buffer.c_str(), buffer.size()));
+      if(nextChar != '\n') throw "expected end of line";
+    }
+    auto table_size = this->col_w_id.size();
+    this->primary_key_idx.reserve(table_size);
+    for(size_t i = 0; i < table_size; i++) {
+      this->primary_key_idx.insert(std::make_pair(std::make_tuple(this->col_w_id[i]), i));
+    }
+  }
+  void loadFromTbl(std::istream&& in) {
+    loadFromTbl(in);
+  }
 };
-//-----------------------------------------------------------------------------
+//--------------------------------------------------
 struct district_t {
-  typedef std::tuple<
-    std::vector<Integer>, //d_id
-    std::vector<Integer>, //d_w_id
-    std::vector<Varchar<10>>, //d_name
-    std::vector<Varchar<20>>, //d_street_1
-    std::vector<Varchar<20>>, //d_street_2
-    std::vector<Varchar<20>>, //d_city
-    std::vector<Char<2>>, //d_state
-    std::vector<Char<9>>, //d_zip
-    std::vector<Numeric<4,4>>, //d_tax
-    std::vector<Numeric<12,2>>, //d_ytd
-    std::vector<Integer> //d_next_o_id
-  > storage_type;
-
-  auto size() {return std::get<0>(data).size();}
-
-  auto& d_id() { return std::get<0>(data); }
-  const auto& d_id() const { return std::get<0>(data); }
-  auto& d_w_id() { return std::get<1>(data); }
-  const auto& d_w_id() const { return std::get<1>(data); }
-  auto& d_name() { return std::get<2>(data); }
-  const auto& d_name() const { return std::get<2>(data); }
-  auto& d_street_1() { return std::get<3>(data); }
-  const auto& d_street_1() const { return std::get<3>(data); }
-  auto& d_street_2() { return std::get<4>(data); }
-  const auto& d_street_2() const { return std::get<4>(data); }
-  auto& d_city() { return std::get<5>(data); }
-  const auto& d_city() const { return std::get<5>(data); }
-  auto& d_state() { return std::get<6>(data); }
-  const auto& d_state() const { return std::get<6>(data); }
-  auto& d_zip() { return std::get<7>(data); }
-  const auto& d_zip() const { return std::get<7>(data); }
-  auto& d_tax() { return std::get<8>(data); }
-  const auto& d_tax() const { return std::get<8>(data); }
-  auto& d_ytd() { return std::get<9>(data); }
-  const auto& d_ytd() const { return std::get<9>(data); }
-  auto& d_next_o_id() { return std::get<10>(data); }
-  const auto& d_next_o_id() const { return std::get<10>(data); }
-  
-
-  class dereferenced_iterator {
-    public:
-      dereferenced_iterator(storage_type &data, size_t offset) : data(data), offset(offset) {}
-
-      auto& d_id() { return std::get<0>(data)[offset]; }
-      const auto& d_id() const { return std::get<0>(data)[offset]; }
-      auto& d_w_id() { return std::get<1>(data)[offset]; }
-      const auto& d_w_id() const { return std::get<1>(data)[offset]; }
-      auto& d_name() { return std::get<2>(data)[offset]; }
-      const auto& d_name() const { return std::get<2>(data)[offset]; }
-      auto& d_street_1() { return std::get<3>(data)[offset]; }
-      const auto& d_street_1() const { return std::get<3>(data)[offset]; }
-      auto& d_street_2() { return std::get<4>(data)[offset]; }
-      const auto& d_street_2() const { return std::get<4>(data)[offset]; }
-      auto& d_city() { return std::get<5>(data)[offset]; }
-      const auto& d_city() const { return std::get<5>(data)[offset]; }
-      auto& d_state() { return std::get<6>(data)[offset]; }
-      const auto& d_state() const { return std::get<6>(data)[offset]; }
-      auto& d_zip() { return std::get<7>(data)[offset]; }
-      const auto& d_zip() const { return std::get<7>(data)[offset]; }
-      auto& d_tax() { return std::get<8>(data)[offset]; }
-      const auto& d_tax() const { return std::get<8>(data)[offset]; }
-      auto& d_ytd() { return std::get<9>(data)[offset]; }
-      const auto& d_ytd() const { return std::get<9>(data)[offset]; }
-      auto& d_next_o_id() { return std::get<10>(data)[offset]; }
-      const auto& d_next_o_id() const { return std::get<10>(data)[offset]; }
-      
-    private:
-      storage_type &data;
-      size_t offset;
-  };
-
-  class iterator {
-    public:
-      typedef std::input_iterator_tag iterator_category; // actually not an input iterator. But this is the best fitting category
-      typedef dereferenced_iterator reference;
-      typedef dereferenced_iterator* pointer;
-      typedef dereferenced_iterator value_type;
-      typedef size_t difference_type;
-
-      iterator(storage_type &data, size_t offset) : data(data), offset(offset) {}
-
-      iterator& operator++() {++offset; return *this;}
-      iterator operator++(int) {auto copy = *this; offset++; return copy;}
-      iterator& operator--() {--offset; return *this;}
-      iterator operator--(int) {auto copy = *this; offset--; return copy;}
-
-      bool operator==(const iterator& rhs) const {return &data == &rhs.data && offset == rhs.offset;}
-      bool operator!=(const iterator& rhs) const {return !(*this == rhs);}
-
-      size_t operator-(const iterator& rhs) const {return offset - rhs.offset;}
-
-      auto operator*() { return dereferenced_iterator{data, offset}; }
-
-    private:
-      storage_type &data;
-      size_t offset;
-  };
-
-  auto begin() {return iterator{data, 0};}
-  auto end() {return iterator{data, size()};}
-
-  storage_type data;
+  std::vector<Integer> col_d_id;
+  std::vector<Integer> col_d_w_id;
+  std::vector<Varchar<10>> col_d_name;
+  std::vector<Varchar<20>> col_d_street_1;
+  std::vector<Varchar<20>> col_d_street_2;
+  std::vector<Varchar<20>> col_d_city;
+  std::vector<Char<2>> col_d_state;
+  std::vector<Char<9>> col_d_zip;
+  std::vector<Numeric<4,4>> col_d_tax;
+  std::vector<Numeric<12,2>> col_d_ytd;
+  std::vector<Integer> col_d_next_o_id;
+  std::unordered_map<std::tuple<Integer, Integer>, size_t> primary_key_idx;
+  void insert_tuple(Integer d_id, Integer d_w_id, Varchar<10> d_name, Varchar<20> d_street_1, Varchar<20> d_street_2, Varchar<20> d_city, Char<2> d_state, Char<9> d_zip, Numeric<4,4> d_tax, Numeric<12,2> d_ytd, Integer d_next_o_id) {
+    this->col_d_id.push_back(d_id);
+    this->col_d_w_id.push_back(d_w_id);
+    this->col_d_name.push_back(d_name);
+    this->col_d_street_1.push_back(d_street_1);
+    this->col_d_street_2.push_back(d_street_2);
+    this->col_d_city.push_back(d_city);
+    this->col_d_state.push_back(d_state);
+    this->col_d_zip.push_back(d_zip);
+    this->col_d_tax.push_back(d_tax);
+    this->col_d_ytd.push_back(d_ytd);
+    this->col_d_next_o_id.push_back(d_next_o_id);
+    this->primary_key_idx.insert(std::make_pair(std::make_tuple(d_w_id, d_id), this->col_d_id.size()));
+  }
+  void delete_tuple(size_t tid) {
+    this->primary_key_idx.erase(this->primary_key_idx.find(std::make_tuple(this->col_d_w_id[tid], this->col_d_id[tid])));
+    this->primary_key_idx[std::make_tuple(this->col_d_w_id.back(), this->col_d_id.back())] = tid;
+    this->col_d_id[tid] = this->col_d_id.back();
+    this->col_d_id.pop_back();
+    this->col_d_w_id[tid] = this->col_d_w_id.back();
+    this->col_d_w_id.pop_back();
+    this->col_d_name[tid] = this->col_d_name.back();
+    this->col_d_name.pop_back();
+    this->col_d_street_1[tid] = this->col_d_street_1.back();
+    this->col_d_street_1.pop_back();
+    this->col_d_street_2[tid] = this->col_d_street_2.back();
+    this->col_d_street_2.pop_back();
+    this->col_d_city[tid] = this->col_d_city.back();
+    this->col_d_city.pop_back();
+    this->col_d_state[tid] = this->col_d_state.back();
+    this->col_d_state.pop_back();
+    this->col_d_zip[tid] = this->col_d_zip.back();
+    this->col_d_zip.pop_back();
+    this->col_d_tax[tid] = this->col_d_tax.back();
+    this->col_d_tax.pop_back();
+    this->col_d_ytd[tid] = this->col_d_ytd.back();
+    this->col_d_ytd.pop_back();
+    this->col_d_next_o_id[tid] = this->col_d_next_o_id.back();
+    this->col_d_next_o_id.pop_back();
+  }
+  void loadFromTbl(std::istream& in) {
+    std::string buffer;
+    char nextChar;
+    while(in.good()) {
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_d_id.push_back(Integer::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_d_w_id.push_back(Integer::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_d_name.push_back(Varchar<10>::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_d_street_1.push_back(Varchar<20>::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_d_street_2.push_back(Varchar<20>::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_d_city.push_back(Varchar<20>::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_d_state.push_back(Char<2>::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_d_zip.push_back(Char<9>::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_d_tax.push_back(Numeric<4,4>::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_d_ytd.push_back(Numeric<12,2>::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_d_next_o_id.push_back(Integer::castString(buffer.c_str(), buffer.size()));
+      if(nextChar != '\n') throw "expected end of line";
+    }
+    auto table_size = this->col_d_id.size();
+    this->primary_key_idx.reserve(table_size);
+    for(size_t i = 0; i < table_size; i++) {
+      this->primary_key_idx.insert(std::make_pair(std::make_tuple(this->col_d_w_id[i], this->col_d_id[i]), i));
+    }
+  }
+  void loadFromTbl(std::istream&& in) {
+    loadFromTbl(in);
+  }
 };
-//-----------------------------------------------------------------------------
+//--------------------------------------------------
 struct customer_t {
-  typedef std::tuple<
-    std::vector<Integer>, //c_id
-    std::vector<Integer>, //c_d_id
-    std::vector<Integer>, //c_w_id
-    std::vector<Varchar<16>>, //c_first
-    std::vector<Char<2>>, //c_middle
-    std::vector<Varchar<16>>, //c_last
-    std::vector<Varchar<20>>, //c_street_1
-    std::vector<Varchar<20>>, //c_street_2
-    std::vector<Varchar<20>>, //c_city
-    std::vector<Char<2>>, //c_state
-    std::vector<Char<9>>, //c_zip
-    std::vector<Char<16>>, //c_phone
-    std::vector<Timestamp>, //c_since
-    std::vector<Char<2>>, //c_credit
-    std::vector<Numeric<12,2>>, //c_credit_lim
-    std::vector<Numeric<4,4>>, //c_discount
-    std::vector<Numeric<12,2>>, //c_balance
-    std::vector<Numeric<12,2>>, //c_ytd_paymenr
-    std::vector<Numeric<4,0>>, //c_payment_cnt
-    std::vector<Numeric<4,0>>, //c_delivery_cnt
-    std::vector<Varchar<500>> //c_data
-  > storage_type;
-
-  auto size() {return std::get<0>(data).size();}
-
-  auto& c_id() { return std::get<0>(data); }
-  const auto& c_id() const { return std::get<0>(data); }
-  auto& c_d_id() { return std::get<1>(data); }
-  const auto& c_d_id() const { return std::get<1>(data); }
-  auto& c_w_id() { return std::get<2>(data); }
-  const auto& c_w_id() const { return std::get<2>(data); }
-  auto& c_first() { return std::get<3>(data); }
-  const auto& c_first() const { return std::get<3>(data); }
-  auto& c_middle() { return std::get<4>(data); }
-  const auto& c_middle() const { return std::get<4>(data); }
-  auto& c_last() { return std::get<5>(data); }
-  const auto& c_last() const { return std::get<5>(data); }
-  auto& c_street_1() { return std::get<6>(data); }
-  const auto& c_street_1() const { return std::get<6>(data); }
-  auto& c_street_2() { return std::get<7>(data); }
-  const auto& c_street_2() const { return std::get<7>(data); }
-  auto& c_city() { return std::get<8>(data); }
-  const auto& c_city() const { return std::get<8>(data); }
-  auto& c_state() { return std::get<9>(data); }
-  const auto& c_state() const { return std::get<9>(data); }
-  auto& c_zip() { return std::get<10>(data); }
-  const auto& c_zip() const { return std::get<10>(data); }
-  auto& c_phone() { return std::get<11>(data); }
-  const auto& c_phone() const { return std::get<11>(data); }
-  auto& c_since() { return std::get<12>(data); }
-  const auto& c_since() const { return std::get<12>(data); }
-  auto& c_credit() { return std::get<13>(data); }
-  const auto& c_credit() const { return std::get<13>(data); }
-  auto& c_credit_lim() { return std::get<14>(data); }
-  const auto& c_credit_lim() const { return std::get<14>(data); }
-  auto& c_discount() { return std::get<15>(data); }
-  const auto& c_discount() const { return std::get<15>(data); }
-  auto& c_balance() { return std::get<16>(data); }
-  const auto& c_balance() const { return std::get<16>(data); }
-  auto& c_ytd_paymenr() { return std::get<17>(data); }
-  const auto& c_ytd_paymenr() const { return std::get<17>(data); }
-  auto& c_payment_cnt() { return std::get<18>(data); }
-  const auto& c_payment_cnt() const { return std::get<18>(data); }
-  auto& c_delivery_cnt() { return std::get<19>(data); }
-  const auto& c_delivery_cnt() const { return std::get<19>(data); }
-  auto& c_data() { return std::get<20>(data); }
-  const auto& c_data() const { return std::get<20>(data); }
-  
-
-  class dereferenced_iterator {
-    public:
-      dereferenced_iterator(storage_type &data, size_t offset) : data(data), offset(offset) {}
-
-      auto& c_id() { return std::get<0>(data)[offset]; }
-      const auto& c_id() const { return std::get<0>(data)[offset]; }
-      auto& c_d_id() { return std::get<1>(data)[offset]; }
-      const auto& c_d_id() const { return std::get<1>(data)[offset]; }
-      auto& c_w_id() { return std::get<2>(data)[offset]; }
-      const auto& c_w_id() const { return std::get<2>(data)[offset]; }
-      auto& c_first() { return std::get<3>(data)[offset]; }
-      const auto& c_first() const { return std::get<3>(data)[offset]; }
-      auto& c_middle() { return std::get<4>(data)[offset]; }
-      const auto& c_middle() const { return std::get<4>(data)[offset]; }
-      auto& c_last() { return std::get<5>(data)[offset]; }
-      const auto& c_last() const { return std::get<5>(data)[offset]; }
-      auto& c_street_1() { return std::get<6>(data)[offset]; }
-      const auto& c_street_1() const { return std::get<6>(data)[offset]; }
-      auto& c_street_2() { return std::get<7>(data)[offset]; }
-      const auto& c_street_2() const { return std::get<7>(data)[offset]; }
-      auto& c_city() { return std::get<8>(data)[offset]; }
-      const auto& c_city() const { return std::get<8>(data)[offset]; }
-      auto& c_state() { return std::get<9>(data)[offset]; }
-      const auto& c_state() const { return std::get<9>(data)[offset]; }
-      auto& c_zip() { return std::get<10>(data)[offset]; }
-      const auto& c_zip() const { return std::get<10>(data)[offset]; }
-      auto& c_phone() { return std::get<11>(data)[offset]; }
-      const auto& c_phone() const { return std::get<11>(data)[offset]; }
-      auto& c_since() { return std::get<12>(data)[offset]; }
-      const auto& c_since() const { return std::get<12>(data)[offset]; }
-      auto& c_credit() { return std::get<13>(data)[offset]; }
-      const auto& c_credit() const { return std::get<13>(data)[offset]; }
-      auto& c_credit_lim() { return std::get<14>(data)[offset]; }
-      const auto& c_credit_lim() const { return std::get<14>(data)[offset]; }
-      auto& c_discount() { return std::get<15>(data)[offset]; }
-      const auto& c_discount() const { return std::get<15>(data)[offset]; }
-      auto& c_balance() { return std::get<16>(data)[offset]; }
-      const auto& c_balance() const { return std::get<16>(data)[offset]; }
-      auto& c_ytd_paymenr() { return std::get<17>(data)[offset]; }
-      const auto& c_ytd_paymenr() const { return std::get<17>(data)[offset]; }
-      auto& c_payment_cnt() { return std::get<18>(data)[offset]; }
-      const auto& c_payment_cnt() const { return std::get<18>(data)[offset]; }
-      auto& c_delivery_cnt() { return std::get<19>(data)[offset]; }
-      const auto& c_delivery_cnt() const { return std::get<19>(data)[offset]; }
-      auto& c_data() { return std::get<20>(data)[offset]; }
-      const auto& c_data() const { return std::get<20>(data)[offset]; }
-      
-    private:
-      storage_type &data;
-      size_t offset;
-  };
-
-  class iterator {
-    public:
-      typedef std::input_iterator_tag iterator_category; // actually not an input iterator. But this is the best fitting category
-      typedef dereferenced_iterator reference;
-      typedef dereferenced_iterator* pointer;
-      typedef dereferenced_iterator value_type;
-      typedef size_t difference_type;
-
-      iterator(storage_type &data, size_t offset) : data(data), offset(offset) {}
-
-      iterator& operator++() {++offset; return *this;}
-      iterator operator++(int) {auto copy = *this; offset++; return copy;}
-      iterator& operator--() {--offset; return *this;}
-      iterator operator--(int) {auto copy = *this; offset--; return copy;}
-
-      bool operator==(const iterator& rhs) const {return &data == &rhs.data && offset == rhs.offset;}
-      bool operator!=(const iterator& rhs) const {return !(*this == rhs);}
-
-      size_t operator-(const iterator& rhs) const {return offset - rhs.offset;}
-
-      auto operator*() { return dereferenced_iterator{data, offset}; }
-
-    private:
-      storage_type &data;
-      size_t offset;
-  };
-
-  auto begin() {return iterator{data, 0};}
-  auto end() {return iterator{data, size()};}
-
-  storage_type data;
+  std::vector<Integer> col_c_id;
+  std::vector<Integer> col_c_d_id;
+  std::vector<Integer> col_c_w_id;
+  std::vector<Varchar<16>> col_c_first;
+  std::vector<Char<2>> col_c_middle;
+  std::vector<Varchar<16>> col_c_last;
+  std::vector<Varchar<20>> col_c_street_1;
+  std::vector<Varchar<20>> col_c_street_2;
+  std::vector<Varchar<20>> col_c_city;
+  std::vector<Char<2>> col_c_state;
+  std::vector<Char<9>> col_c_zip;
+  std::vector<Char<16>> col_c_phone;
+  std::vector<Timestamp> col_c_since;
+  std::vector<Char<2>> col_c_credit;
+  std::vector<Numeric<12,2>> col_c_credit_lim;
+  std::vector<Numeric<4,4>> col_c_discount;
+  std::vector<Numeric<12,2>> col_c_balance;
+  std::vector<Numeric<12,2>> col_c_ytd_paymenr;
+  std::vector<Numeric<4,0>> col_c_payment_cnt;
+  std::vector<Numeric<4,0>> col_c_delivery_cnt;
+  std::vector<Varchar<244>> col_c_data;
+  std::unordered_map<std::tuple<Integer, Integer, Integer>, size_t> primary_key_idx;
+  std::unordered_map<std::tuple<Integer, Integer, Varchar<16>, Varchar<16>>, size_t> idx_customer_wdl;
+  void insert_tuple(Integer c_id, Integer c_d_id, Integer c_w_id, Varchar<16> c_first, Char<2> c_middle, Varchar<16> c_last, Varchar<20> c_street_1, Varchar<20> c_street_2, Varchar<20> c_city, Char<2> c_state, Char<9> c_zip, Char<16> c_phone, Timestamp c_since, Char<2> c_credit, Numeric<12,2> c_credit_lim, Numeric<4,4> c_discount, Numeric<12,2> c_balance, Numeric<12,2> c_ytd_paymenr, Numeric<4,0> c_payment_cnt, Numeric<4,0> c_delivery_cnt, Varchar<244> c_data) {
+    this->col_c_id.push_back(c_id);
+    this->col_c_d_id.push_back(c_d_id);
+    this->col_c_w_id.push_back(c_w_id);
+    this->col_c_first.push_back(c_first);
+    this->col_c_middle.push_back(c_middle);
+    this->col_c_last.push_back(c_last);
+    this->col_c_street_1.push_back(c_street_1);
+    this->col_c_street_2.push_back(c_street_2);
+    this->col_c_city.push_back(c_city);
+    this->col_c_state.push_back(c_state);
+    this->col_c_zip.push_back(c_zip);
+    this->col_c_phone.push_back(c_phone);
+    this->col_c_since.push_back(c_since);
+    this->col_c_credit.push_back(c_credit);
+    this->col_c_credit_lim.push_back(c_credit_lim);
+    this->col_c_discount.push_back(c_discount);
+    this->col_c_balance.push_back(c_balance);
+    this->col_c_ytd_paymenr.push_back(c_ytd_paymenr);
+    this->col_c_payment_cnt.push_back(c_payment_cnt);
+    this->col_c_delivery_cnt.push_back(c_delivery_cnt);
+    this->col_c_data.push_back(c_data);
+    this->primary_key_idx.insert(std::make_pair(std::make_tuple(c_w_id, c_d_id, c_id), this->col_c_id.size()));
+    this->idx_customer_wdl.insert(std::make_pair(std::make_tuple(c_w_id, c_d_id, c_last, c_first), this->col_c_id.size()));
+  }
+  void delete_tuple(size_t tid) {
+    this->primary_key_idx.erase(this->primary_key_idx.find(std::make_tuple(this->col_c_w_id[tid], this->col_c_d_id[tid], this->col_c_id[tid])));
+    this->primary_key_idx[std::make_tuple(this->col_c_w_id.back(), this->col_c_d_id.back(), this->col_c_id.back())] = tid;
+    this->idx_customer_wdl.erase(this->idx_customer_wdl.find(std::make_tuple(this->col_c_w_id[tid], this->col_c_d_id[tid], this->col_c_last[tid], this->col_c_first[tid])));
+    this->idx_customer_wdl[std::make_tuple(this->col_c_w_id.back(), this->col_c_d_id.back(), this->col_c_last.back(), this->col_c_first.back())] = tid;
+    this->col_c_id[tid] = this->col_c_id.back();
+    this->col_c_id.pop_back();
+    this->col_c_d_id[tid] = this->col_c_d_id.back();
+    this->col_c_d_id.pop_back();
+    this->col_c_w_id[tid] = this->col_c_w_id.back();
+    this->col_c_w_id.pop_back();
+    this->col_c_first[tid] = this->col_c_first.back();
+    this->col_c_first.pop_back();
+    this->col_c_middle[tid] = this->col_c_middle.back();
+    this->col_c_middle.pop_back();
+    this->col_c_last[tid] = this->col_c_last.back();
+    this->col_c_last.pop_back();
+    this->col_c_street_1[tid] = this->col_c_street_1.back();
+    this->col_c_street_1.pop_back();
+    this->col_c_street_2[tid] = this->col_c_street_2.back();
+    this->col_c_street_2.pop_back();
+    this->col_c_city[tid] = this->col_c_city.back();
+    this->col_c_city.pop_back();
+    this->col_c_state[tid] = this->col_c_state.back();
+    this->col_c_state.pop_back();
+    this->col_c_zip[tid] = this->col_c_zip.back();
+    this->col_c_zip.pop_back();
+    this->col_c_phone[tid] = this->col_c_phone.back();
+    this->col_c_phone.pop_back();
+    this->col_c_since[tid] = this->col_c_since.back();
+    this->col_c_since.pop_back();
+    this->col_c_credit[tid] = this->col_c_credit.back();
+    this->col_c_credit.pop_back();
+    this->col_c_credit_lim[tid] = this->col_c_credit_lim.back();
+    this->col_c_credit_lim.pop_back();
+    this->col_c_discount[tid] = this->col_c_discount.back();
+    this->col_c_discount.pop_back();
+    this->col_c_balance[tid] = this->col_c_balance.back();
+    this->col_c_balance.pop_back();
+    this->col_c_ytd_paymenr[tid] = this->col_c_ytd_paymenr.back();
+    this->col_c_ytd_paymenr.pop_back();
+    this->col_c_payment_cnt[tid] = this->col_c_payment_cnt.back();
+    this->col_c_payment_cnt.pop_back();
+    this->col_c_delivery_cnt[tid] = this->col_c_delivery_cnt.back();
+    this->col_c_delivery_cnt.pop_back();
+    this->col_c_data[tid] = this->col_c_data.back();
+    this->col_c_data.pop_back();
+  }
+  void loadFromTbl(std::istream& in) {
+    std::string buffer;
+    char nextChar;
+    while(in.good()) {
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_c_id.push_back(Integer::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_c_d_id.push_back(Integer::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_c_w_id.push_back(Integer::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_c_first.push_back(Varchar<16>::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_c_middle.push_back(Char<2>::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_c_last.push_back(Varchar<16>::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_c_street_1.push_back(Varchar<20>::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_c_street_2.push_back(Varchar<20>::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_c_city.push_back(Varchar<20>::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_c_state.push_back(Char<2>::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_c_zip.push_back(Char<9>::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_c_phone.push_back(Char<16>::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_c_since.push_back(Timestamp::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_c_credit.push_back(Char<2>::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_c_credit_lim.push_back(Numeric<12,2>::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_c_discount.push_back(Numeric<4,4>::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_c_balance.push_back(Numeric<12,2>::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_c_ytd_paymenr.push_back(Numeric<12,2>::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_c_payment_cnt.push_back(Numeric<4,0>::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_c_delivery_cnt.push_back(Numeric<4,0>::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_c_data.push_back(Varchar<244>::castString(buffer.c_str(), buffer.size()));
+      if(nextChar != '\n') throw "expected end of line";
+    }
+    auto table_size = this->col_c_id.size();
+    this->primary_key_idx.reserve(table_size);
+    this->idx_customer_wdl.reserve(table_size);
+    for(size_t i = 0; i < table_size; i++) {
+      this->primary_key_idx.insert(std::make_pair(std::make_tuple(this->col_c_w_id[i], this->col_c_d_id[i], this->col_c_id[i]), i));
+      this->idx_customer_wdl.insert(std::make_pair(std::make_tuple(this->col_c_w_id[i], this->col_c_d_id[i], this->col_c_last[i], this->col_c_first[i]), i));
+    }
+  }
+  void loadFromTbl(std::istream&& in) {
+    loadFromTbl(in);
+  }
 };
-//-----------------------------------------------------------------------------
+//--------------------------------------------------
 struct history_t {
-  typedef std::tuple<
-    std::vector<Integer>, //h_c_id
-    std::vector<Integer>, //h_c_d_id
-    std::vector<Integer>, //h_c_w_id
-    std::vector<Integer>, //h_d_id
-    std::vector<Integer>, //h_w_id
-    std::vector<Timestamp>, //h_date
-    std::vector<Numeric<6,2>>, //h_amount
-    std::vector<Varchar<24>> //h_data
-  > storage_type;
-
-  auto size() {return std::get<0>(data).size();}
-
-  auto& h_c_id() { return std::get<0>(data); }
-  const auto& h_c_id() const { return std::get<0>(data); }
-  auto& h_c_d_id() { return std::get<1>(data); }
-  const auto& h_c_d_id() const { return std::get<1>(data); }
-  auto& h_c_w_id() { return std::get<2>(data); }
-  const auto& h_c_w_id() const { return std::get<2>(data); }
-  auto& h_d_id() { return std::get<3>(data); }
-  const auto& h_d_id() const { return std::get<3>(data); }
-  auto& h_w_id() { return std::get<4>(data); }
-  const auto& h_w_id() const { return std::get<4>(data); }
-  auto& h_date() { return std::get<5>(data); }
-  const auto& h_date() const { return std::get<5>(data); }
-  auto& h_amount() { return std::get<6>(data); }
-  const auto& h_amount() const { return std::get<6>(data); }
-  auto& h_data() { return std::get<7>(data); }
-  const auto& h_data() const { return std::get<7>(data); }
-  
-
-  class dereferenced_iterator {
-    public:
-      dereferenced_iterator(storage_type &data, size_t offset) : data(data), offset(offset) {}
-
-      auto& h_c_id() { return std::get<0>(data)[offset]; }
-      const auto& h_c_id() const { return std::get<0>(data)[offset]; }
-      auto& h_c_d_id() { return std::get<1>(data)[offset]; }
-      const auto& h_c_d_id() const { return std::get<1>(data)[offset]; }
-      auto& h_c_w_id() { return std::get<2>(data)[offset]; }
-      const auto& h_c_w_id() const { return std::get<2>(data)[offset]; }
-      auto& h_d_id() { return std::get<3>(data)[offset]; }
-      const auto& h_d_id() const { return std::get<3>(data)[offset]; }
-      auto& h_w_id() { return std::get<4>(data)[offset]; }
-      const auto& h_w_id() const { return std::get<4>(data)[offset]; }
-      auto& h_date() { return std::get<5>(data)[offset]; }
-      const auto& h_date() const { return std::get<5>(data)[offset]; }
-      auto& h_amount() { return std::get<6>(data)[offset]; }
-      const auto& h_amount() const { return std::get<6>(data)[offset]; }
-      auto& h_data() { return std::get<7>(data)[offset]; }
-      const auto& h_data() const { return std::get<7>(data)[offset]; }
-      
-    private:
-      storage_type &data;
-      size_t offset;
-  };
-
-  class iterator {
-    public:
-      typedef std::input_iterator_tag iterator_category; // actually not an input iterator. But this is the best fitting category
-      typedef dereferenced_iterator reference;
-      typedef dereferenced_iterator* pointer;
-      typedef dereferenced_iterator value_type;
-      typedef size_t difference_type;
-
-      iterator(storage_type &data, size_t offset) : data(data), offset(offset) {}
-
-      iterator& operator++() {++offset; return *this;}
-      iterator operator++(int) {auto copy = *this; offset++; return copy;}
-      iterator& operator--() {--offset; return *this;}
-      iterator operator--(int) {auto copy = *this; offset--; return copy;}
-
-      bool operator==(const iterator& rhs) const {return &data == &rhs.data && offset == rhs.offset;}
-      bool operator!=(const iterator& rhs) const {return !(*this == rhs);}
-
-      size_t operator-(const iterator& rhs) const {return offset - rhs.offset;}
-
-      auto operator*() { return dereferenced_iterator{data, offset}; }
-
-    private:
-      storage_type &data;
-      size_t offset;
-  };
-
-  auto begin() {return iterator{data, 0};}
-  auto end() {return iterator{data, size()};}
-
-  storage_type data;
+  std::vector<Integer> col_h_c_id;
+  std::vector<Integer> col_h_c_d_id;
+  std::vector<Integer> col_h_c_w_id;
+  std::vector<Integer> col_h_d_id;
+  std::vector<Integer> col_h_w_id;
+  std::vector<Timestamp> col_h_date;
+  std::vector<Numeric<6,2>> col_h_amount;
+  std::vector<Varchar<24>> col_h_data;
+  void insert_tuple(Integer h_c_id, Integer h_c_d_id, Integer h_c_w_id, Integer h_d_id, Integer h_w_id, Timestamp h_date, Numeric<6,2> h_amount, Varchar<24> h_data) {
+    this->col_h_c_id.push_back(h_c_id);
+    this->col_h_c_d_id.push_back(h_c_d_id);
+    this->col_h_c_w_id.push_back(h_c_w_id);
+    this->col_h_d_id.push_back(h_d_id);
+    this->col_h_w_id.push_back(h_w_id);
+    this->col_h_date.push_back(h_date);
+    this->col_h_amount.push_back(h_amount);
+    this->col_h_data.push_back(h_data);
+  }
+  void delete_tuple(size_t tid) {
+    this->col_h_c_id[tid] = this->col_h_c_id.back();
+    this->col_h_c_id.pop_back();
+    this->col_h_c_d_id[tid] = this->col_h_c_d_id.back();
+    this->col_h_c_d_id.pop_back();
+    this->col_h_c_w_id[tid] = this->col_h_c_w_id.back();
+    this->col_h_c_w_id.pop_back();
+    this->col_h_d_id[tid] = this->col_h_d_id.back();
+    this->col_h_d_id.pop_back();
+    this->col_h_w_id[tid] = this->col_h_w_id.back();
+    this->col_h_w_id.pop_back();
+    this->col_h_date[tid] = this->col_h_date.back();
+    this->col_h_date.pop_back();
+    this->col_h_amount[tid] = this->col_h_amount.back();
+    this->col_h_amount.pop_back();
+    this->col_h_data[tid] = this->col_h_data.back();
+    this->col_h_data.pop_back();
+  }
+  void loadFromTbl(std::istream& in) {
+    std::string buffer;
+    char nextChar;
+    while(in.good()) {
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_h_c_id.push_back(Integer::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_h_c_d_id.push_back(Integer::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_h_c_w_id.push_back(Integer::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_h_d_id.push_back(Integer::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_h_w_id.push_back(Integer::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_h_date.push_back(Timestamp::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_h_amount.push_back(Numeric<6,2>::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_h_data.push_back(Varchar<24>::castString(buffer.c_str(), buffer.size()));
+      if(nextChar != '\n') throw "expected end of line";
+    }
+    auto table_size = this->col_h_c_id.size();
+    for(size_t i = 0; i < table_size; i++) {
+    }
+  }
+  void loadFromTbl(std::istream&& in) {
+    loadFromTbl(in);
+  }
 };
-//-----------------------------------------------------------------------------
+//--------------------------------------------------
 struct neworder_t {
-  typedef std::tuple<
-    std::vector<Integer>, //no_o_id
-    std::vector<Integer>, //no_d_id
-    std::vector<Integer> //no_w_id
-  > storage_type;
-
-  auto size() {return std::get<0>(data).size();}
-
-  auto& no_o_id() { return std::get<0>(data); }
-  const auto& no_o_id() const { return std::get<0>(data); }
-  auto& no_d_id() { return std::get<1>(data); }
-  const auto& no_d_id() const { return std::get<1>(data); }
-  auto& no_w_id() { return std::get<2>(data); }
-  const auto& no_w_id() const { return std::get<2>(data); }
-  
-
-  class dereferenced_iterator {
-    public:
-      dereferenced_iterator(storage_type &data, size_t offset) : data(data), offset(offset) {}
-
-      auto& no_o_id() { return std::get<0>(data)[offset]; }
-      const auto& no_o_id() const { return std::get<0>(data)[offset]; }
-      auto& no_d_id() { return std::get<1>(data)[offset]; }
-      const auto& no_d_id() const { return std::get<1>(data)[offset]; }
-      auto& no_w_id() { return std::get<2>(data)[offset]; }
-      const auto& no_w_id() const { return std::get<2>(data)[offset]; }
-      
-    private:
-      storage_type &data;
-      size_t offset;
-  };
-
-  class iterator {
-    public:
-      typedef std::input_iterator_tag iterator_category; // actually not an input iterator. But this is the best fitting category
-      typedef dereferenced_iterator reference;
-      typedef dereferenced_iterator* pointer;
-      typedef dereferenced_iterator value_type;
-      typedef size_t difference_type;
-
-      iterator(storage_type &data, size_t offset) : data(data), offset(offset) {}
-
-      iterator& operator++() {++offset; return *this;}
-      iterator operator++(int) {auto copy = *this; offset++; return copy;}
-      iterator& operator--() {--offset; return *this;}
-      iterator operator--(int) {auto copy = *this; offset--; return copy;}
-
-      bool operator==(const iterator& rhs) const {return &data == &rhs.data && offset == rhs.offset;}
-      bool operator!=(const iterator& rhs) const {return !(*this == rhs);}
-
-      size_t operator-(const iterator& rhs) const {return offset - rhs.offset;}
-
-      auto operator*() { return dereferenced_iterator{data, offset}; }
-
-    private:
-      storage_type &data;
-      size_t offset;
-  };
-
-  auto begin() {return iterator{data, 0};}
-  auto end() {return iterator{data, size()};}
-
-  storage_type data;
+  std::vector<Integer> col_no_o_id;
+  std::vector<Integer> col_no_d_id;
+  std::vector<Integer> col_no_w_id;
+  std::unordered_map<std::tuple<Integer, Integer, Integer>, size_t> primary_key_idx;
+  void insert_tuple(Integer no_o_id, Integer no_d_id, Integer no_w_id) {
+    this->col_no_o_id.push_back(no_o_id);
+    this->col_no_d_id.push_back(no_d_id);
+    this->col_no_w_id.push_back(no_w_id);
+    this->primary_key_idx.insert(std::make_pair(std::make_tuple(no_w_id, no_d_id, no_o_id), this->col_no_o_id.size()));
+  }
+  void delete_tuple(size_t tid) {
+    this->primary_key_idx.erase(this->primary_key_idx.find(std::make_tuple(this->col_no_w_id[tid], this->col_no_d_id[tid], this->col_no_o_id[tid])));
+    this->primary_key_idx[std::make_tuple(this->col_no_w_id.back(), this->col_no_d_id.back(), this->col_no_o_id.back())] = tid;
+    this->col_no_o_id[tid] = this->col_no_o_id.back();
+    this->col_no_o_id.pop_back();
+    this->col_no_d_id[tid] = this->col_no_d_id.back();
+    this->col_no_d_id.pop_back();
+    this->col_no_w_id[tid] = this->col_no_w_id.back();
+    this->col_no_w_id.pop_back();
+  }
+  void loadFromTbl(std::istream& in) {
+    std::string buffer;
+    char nextChar;
+    while(in.good()) {
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_no_o_id.push_back(Integer::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_no_d_id.push_back(Integer::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_no_w_id.push_back(Integer::castString(buffer.c_str(), buffer.size()));
+      if(nextChar != '\n') throw "expected end of line";
+    }
+    auto table_size = this->col_no_o_id.size();
+    this->primary_key_idx.reserve(table_size);
+    for(size_t i = 0; i < table_size; i++) {
+      this->primary_key_idx.insert(std::make_pair(std::make_tuple(this->col_no_w_id[i], this->col_no_d_id[i], this->col_no_o_id[i]), i));
+    }
+  }
+  void loadFromTbl(std::istream&& in) {
+    loadFromTbl(in);
+  }
 };
-//-----------------------------------------------------------------------------
+//--------------------------------------------------
 struct order_t {
-  typedef std::tuple<
-    std::vector<Integer>, //o_id
-    std::vector<Integer>, //o_d_id
-    std::vector<Integer>, //o_w_id
-    std::vector<Integer>, //o_c_id
-    std::vector<Timestamp>, //o_entry_d
-    std::vector<Integer>, //o_carrier_id
-    std::vector<Numeric<2,0>>, //o_ol_cnt
-    std::vector<Numeric<1,0>> //o_all_local
-  > storage_type;
-
-  auto size() {return std::get<0>(data).size();}
-
-  auto& o_id() { return std::get<0>(data); }
-  const auto& o_id() const { return std::get<0>(data); }
-  auto& o_d_id() { return std::get<1>(data); }
-  const auto& o_d_id() const { return std::get<1>(data); }
-  auto& o_w_id() { return std::get<2>(data); }
-  const auto& o_w_id() const { return std::get<2>(data); }
-  auto& o_c_id() { return std::get<3>(data); }
-  const auto& o_c_id() const { return std::get<3>(data); }
-  auto& o_entry_d() { return std::get<4>(data); }
-  const auto& o_entry_d() const { return std::get<4>(data); }
-  auto& o_carrier_id() { return std::get<5>(data); }
-  const auto& o_carrier_id() const { return std::get<5>(data); }
-  auto& o_ol_cnt() { return std::get<6>(data); }
-  const auto& o_ol_cnt() const { return std::get<6>(data); }
-  auto& o_all_local() { return std::get<7>(data); }
-  const auto& o_all_local() const { return std::get<7>(data); }
-  
-
-  class dereferenced_iterator {
-    public:
-      dereferenced_iterator(storage_type &data, size_t offset) : data(data), offset(offset) {}
-
-      auto& o_id() { return std::get<0>(data)[offset]; }
-      const auto& o_id() const { return std::get<0>(data)[offset]; }
-      auto& o_d_id() { return std::get<1>(data)[offset]; }
-      const auto& o_d_id() const { return std::get<1>(data)[offset]; }
-      auto& o_w_id() { return std::get<2>(data)[offset]; }
-      const auto& o_w_id() const { return std::get<2>(data)[offset]; }
-      auto& o_c_id() { return std::get<3>(data)[offset]; }
-      const auto& o_c_id() const { return std::get<3>(data)[offset]; }
-      auto& o_entry_d() { return std::get<4>(data)[offset]; }
-      const auto& o_entry_d() const { return std::get<4>(data)[offset]; }
-      auto& o_carrier_id() { return std::get<5>(data)[offset]; }
-      const auto& o_carrier_id() const { return std::get<5>(data)[offset]; }
-      auto& o_ol_cnt() { return std::get<6>(data)[offset]; }
-      const auto& o_ol_cnt() const { return std::get<6>(data)[offset]; }
-      auto& o_all_local() { return std::get<7>(data)[offset]; }
-      const auto& o_all_local() const { return std::get<7>(data)[offset]; }
-      
-    private:
-      storage_type &data;
-      size_t offset;
-  };
-
-  class iterator {
-    public:
-      typedef std::input_iterator_tag iterator_category; // actually not an input iterator. But this is the best fitting category
-      typedef dereferenced_iterator reference;
-      typedef dereferenced_iterator* pointer;
-      typedef dereferenced_iterator value_type;
-      typedef size_t difference_type;
-
-      iterator(storage_type &data, size_t offset) : data(data), offset(offset) {}
-
-      iterator& operator++() {++offset; return *this;}
-      iterator operator++(int) {auto copy = *this; offset++; return copy;}
-      iterator& operator--() {--offset; return *this;}
-      iterator operator--(int) {auto copy = *this; offset--; return copy;}
-
-      bool operator==(const iterator& rhs) const {return &data == &rhs.data && offset == rhs.offset;}
-      bool operator!=(const iterator& rhs) const {return !(*this == rhs);}
-
-      size_t operator-(const iterator& rhs) const {return offset - rhs.offset;}
-
-      auto operator*() { return dereferenced_iterator{data, offset}; }
-
-    private:
-      storage_type &data;
-      size_t offset;
-  };
-
-  auto begin() {return iterator{data, 0};}
-  auto end() {return iterator{data, size()};}
-
-  storage_type data;
+  std::vector<Integer> col_o_id;
+  std::vector<Integer> col_o_d_id;
+  std::vector<Integer> col_o_w_id;
+  std::vector<Integer> col_o_c_id;
+  std::vector<Timestamp> col_o_entry_d;
+  std::vector<Integer> col_o_carrier_id;
+  std::vector<Numeric<2,0>> col_o_ol_cnt;
+  std::vector<Numeric<1,0>> col_o_all_local;
+  std::unordered_map<std::tuple<Integer, Integer, Integer>, size_t> primary_key_idx;
+  std::unordered_map<std::tuple<Integer, Integer, Integer, Integer>, size_t> idx_order_wdc;
+  void insert_tuple(Integer o_id, Integer o_d_id, Integer o_w_id, Integer o_c_id, Timestamp o_entry_d, Integer o_carrier_id, Numeric<2,0> o_ol_cnt, Numeric<1,0> o_all_local) {
+    this->col_o_id.push_back(o_id);
+    this->col_o_d_id.push_back(o_d_id);
+    this->col_o_w_id.push_back(o_w_id);
+    this->col_o_c_id.push_back(o_c_id);
+    this->col_o_entry_d.push_back(o_entry_d);
+    this->col_o_carrier_id.push_back(o_carrier_id);
+    this->col_o_ol_cnt.push_back(o_ol_cnt);
+    this->col_o_all_local.push_back(o_all_local);
+    this->primary_key_idx.insert(std::make_pair(std::make_tuple(o_w_id, o_d_id, o_id), this->col_o_id.size()));
+    this->idx_order_wdc.insert(std::make_pair(std::make_tuple(o_w_id, o_d_id, o_c_id, o_id), this->col_o_id.size()));
+  }
+  void delete_tuple(size_t tid) {
+    this->primary_key_idx.erase(this->primary_key_idx.find(std::make_tuple(this->col_o_w_id[tid], this->col_o_d_id[tid], this->col_o_id[tid])));
+    this->primary_key_idx[std::make_tuple(this->col_o_w_id.back(), this->col_o_d_id.back(), this->col_o_id.back())] = tid;
+    this->idx_order_wdc.erase(this->idx_order_wdc.find(std::make_tuple(this->col_o_w_id[tid], this->col_o_d_id[tid], this->col_o_c_id[tid], this->col_o_id[tid])));
+    this->idx_order_wdc[std::make_tuple(this->col_o_w_id.back(), this->col_o_d_id.back(), this->col_o_c_id.back(), this->col_o_id.back())] = tid;
+    this->col_o_id[tid] = this->col_o_id.back();
+    this->col_o_id.pop_back();
+    this->col_o_d_id[tid] = this->col_o_d_id.back();
+    this->col_o_d_id.pop_back();
+    this->col_o_w_id[tid] = this->col_o_w_id.back();
+    this->col_o_w_id.pop_back();
+    this->col_o_c_id[tid] = this->col_o_c_id.back();
+    this->col_o_c_id.pop_back();
+    this->col_o_entry_d[tid] = this->col_o_entry_d.back();
+    this->col_o_entry_d.pop_back();
+    this->col_o_carrier_id[tid] = this->col_o_carrier_id.back();
+    this->col_o_carrier_id.pop_back();
+    this->col_o_ol_cnt[tid] = this->col_o_ol_cnt.back();
+    this->col_o_ol_cnt.pop_back();
+    this->col_o_all_local[tid] = this->col_o_all_local.back();
+    this->col_o_all_local.pop_back();
+  }
+  void loadFromTbl(std::istream& in) {
+    std::string buffer;
+    char nextChar;
+    while(in.good()) {
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_o_id.push_back(Integer::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_o_d_id.push_back(Integer::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_o_w_id.push_back(Integer::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_o_c_id.push_back(Integer::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_o_entry_d.push_back(Timestamp::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_o_carrier_id.push_back(Integer::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_o_ol_cnt.push_back(Numeric<2,0>::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_o_all_local.push_back(Numeric<1,0>::castString(buffer.c_str(), buffer.size()));
+      if(nextChar != '\n') throw "expected end of line";
+    }
+    auto table_size = this->col_o_id.size();
+    this->primary_key_idx.reserve(table_size);
+    this->idx_order_wdc.reserve(table_size);
+    for(size_t i = 0; i < table_size; i++) {
+      this->primary_key_idx.insert(std::make_pair(std::make_tuple(this->col_o_w_id[i], this->col_o_d_id[i], this->col_o_id[i]), i));
+      this->idx_order_wdc.insert(std::make_pair(std::make_tuple(this->col_o_w_id[i], this->col_o_d_id[i], this->col_o_c_id[i], this->col_o_id[i]), i));
+    }
+  }
+  void loadFromTbl(std::istream&& in) {
+    loadFromTbl(in);
+  }
 };
-//-----------------------------------------------------------------------------
+//--------------------------------------------------
 struct orderline_t {
-  typedef std::tuple<
-    std::vector<Integer>, //ol_o_id
-    std::vector<Integer>, //ol_d_id
-    std::vector<Integer>, //ol_w_id
-    std::vector<Integer>, //ol_number
-    std::vector<Integer>, //ol_i_id
-    std::vector<Integer>, //ol_supply_w_id
-    std::vector<Timestamp>, //ol_delivery_d
-    std::vector<Numeric<2,0>>, //ol_quantity
-    std::vector<Numeric<6,2>>, //ol_amount
-    std::vector<Char<24>> //ol_dist_info
-  > storage_type;
-
-  auto size() {return std::get<0>(data).size();}
-
-  auto& ol_o_id() { return std::get<0>(data); }
-  const auto& ol_o_id() const { return std::get<0>(data); }
-  auto& ol_d_id() { return std::get<1>(data); }
-  const auto& ol_d_id() const { return std::get<1>(data); }
-  auto& ol_w_id() { return std::get<2>(data); }
-  const auto& ol_w_id() const { return std::get<2>(data); }
-  auto& ol_number() { return std::get<3>(data); }
-  const auto& ol_number() const { return std::get<3>(data); }
-  auto& ol_i_id() { return std::get<4>(data); }
-  const auto& ol_i_id() const { return std::get<4>(data); }
-  auto& ol_supply_w_id() { return std::get<5>(data); }
-  const auto& ol_supply_w_id() const { return std::get<5>(data); }
-  auto& ol_delivery_d() { return std::get<6>(data); }
-  const auto& ol_delivery_d() const { return std::get<6>(data); }
-  auto& ol_quantity() { return std::get<7>(data); }
-  const auto& ol_quantity() const { return std::get<7>(data); }
-  auto& ol_amount() { return std::get<8>(data); }
-  const auto& ol_amount() const { return std::get<8>(data); }
-  auto& ol_dist_info() { return std::get<9>(data); }
-  const auto& ol_dist_info() const { return std::get<9>(data); }
-  
-
-  class dereferenced_iterator {
-    public:
-      dereferenced_iterator(storage_type &data, size_t offset) : data(data), offset(offset) {}
-
-      auto& ol_o_id() { return std::get<0>(data)[offset]; }
-      const auto& ol_o_id() const { return std::get<0>(data)[offset]; }
-      auto& ol_d_id() { return std::get<1>(data)[offset]; }
-      const auto& ol_d_id() const { return std::get<1>(data)[offset]; }
-      auto& ol_w_id() { return std::get<2>(data)[offset]; }
-      const auto& ol_w_id() const { return std::get<2>(data)[offset]; }
-      auto& ol_number() { return std::get<3>(data)[offset]; }
-      const auto& ol_number() const { return std::get<3>(data)[offset]; }
-      auto& ol_i_id() { return std::get<4>(data)[offset]; }
-      const auto& ol_i_id() const { return std::get<4>(data)[offset]; }
-      auto& ol_supply_w_id() { return std::get<5>(data)[offset]; }
-      const auto& ol_supply_w_id() const { return std::get<5>(data)[offset]; }
-      auto& ol_delivery_d() { return std::get<6>(data)[offset]; }
-      const auto& ol_delivery_d() const { return std::get<6>(data)[offset]; }
-      auto& ol_quantity() { return std::get<7>(data)[offset]; }
-      const auto& ol_quantity() const { return std::get<7>(data)[offset]; }
-      auto& ol_amount() { return std::get<8>(data)[offset]; }
-      const auto& ol_amount() const { return std::get<8>(data)[offset]; }
-      auto& ol_dist_info() { return std::get<9>(data)[offset]; }
-      const auto& ol_dist_info() const { return std::get<9>(data)[offset]; }
-      
-    private:
-      storage_type &data;
-      size_t offset;
-  };
-
-  class iterator {
-    public:
-      typedef std::input_iterator_tag iterator_category; // actually not an input iterator. But this is the best fitting category
-      typedef dereferenced_iterator reference;
-      typedef dereferenced_iterator* pointer;
-      typedef dereferenced_iterator value_type;
-      typedef size_t difference_type;
-
-      iterator(storage_type &data, size_t offset) : data(data), offset(offset) {}
-
-      iterator& operator++() {++offset; return *this;}
-      iterator operator++(int) {auto copy = *this; offset++; return copy;}
-      iterator& operator--() {--offset; return *this;}
-      iterator operator--(int) {auto copy = *this; offset--; return copy;}
-
-      bool operator==(const iterator& rhs) const {return &data == &rhs.data && offset == rhs.offset;}
-      bool operator!=(const iterator& rhs) const {return !(*this == rhs);}
-
-      size_t operator-(const iterator& rhs) const {return offset - rhs.offset;}
-
-      auto operator*() { return dereferenced_iterator{data, offset}; }
-
-    private:
-      storage_type &data;
-      size_t offset;
-  };
-
-  auto begin() {return iterator{data, 0};}
-  auto end() {return iterator{data, size()};}
-
-  storage_type data;
+  std::vector<Integer> col_ol_o_id;
+  std::vector<Integer> col_ol_d_id;
+  std::vector<Integer> col_ol_w_id;
+  std::vector<Integer> col_ol_number;
+  std::vector<Integer> col_ol_i_id;
+  std::vector<Integer> col_ol_supply_w_id;
+  std::vector<Timestamp> col_ol_delivery_d;
+  std::vector<Numeric<2,0>> col_ol_quantity;
+  std::vector<Numeric<6,2>> col_ol_amount;
+  std::vector<Char<24>> col_ol_dist_info;
+  std::unordered_map<std::tuple<Integer, Integer, Integer, Integer>, size_t> primary_key_idx;
+  void insert_tuple(Integer ol_o_id, Integer ol_d_id, Integer ol_w_id, Integer ol_number, Integer ol_i_id, Integer ol_supply_w_id, Timestamp ol_delivery_d, Numeric<2,0> ol_quantity, Numeric<6,2> ol_amount, Char<24> ol_dist_info) {
+    this->col_ol_o_id.push_back(ol_o_id);
+    this->col_ol_d_id.push_back(ol_d_id);
+    this->col_ol_w_id.push_back(ol_w_id);
+    this->col_ol_number.push_back(ol_number);
+    this->col_ol_i_id.push_back(ol_i_id);
+    this->col_ol_supply_w_id.push_back(ol_supply_w_id);
+    this->col_ol_delivery_d.push_back(ol_delivery_d);
+    this->col_ol_quantity.push_back(ol_quantity);
+    this->col_ol_amount.push_back(ol_amount);
+    this->col_ol_dist_info.push_back(ol_dist_info);
+    this->primary_key_idx.insert(std::make_pair(std::make_tuple(ol_w_id, ol_d_id, ol_o_id, ol_number), this->col_ol_o_id.size()));
+  }
+  void delete_tuple(size_t tid) {
+    this->primary_key_idx.erase(this->primary_key_idx.find(std::make_tuple(this->col_ol_w_id[tid], this->col_ol_d_id[tid], this->col_ol_o_id[tid], this->col_ol_number[tid])));
+    this->primary_key_idx[std::make_tuple(this->col_ol_w_id.back(), this->col_ol_d_id.back(), this->col_ol_o_id.back(), this->col_ol_number.back())] = tid;
+    this->col_ol_o_id[tid] = this->col_ol_o_id.back();
+    this->col_ol_o_id.pop_back();
+    this->col_ol_d_id[tid] = this->col_ol_d_id.back();
+    this->col_ol_d_id.pop_back();
+    this->col_ol_w_id[tid] = this->col_ol_w_id.back();
+    this->col_ol_w_id.pop_back();
+    this->col_ol_number[tid] = this->col_ol_number.back();
+    this->col_ol_number.pop_back();
+    this->col_ol_i_id[tid] = this->col_ol_i_id.back();
+    this->col_ol_i_id.pop_back();
+    this->col_ol_supply_w_id[tid] = this->col_ol_supply_w_id.back();
+    this->col_ol_supply_w_id.pop_back();
+    this->col_ol_delivery_d[tid] = this->col_ol_delivery_d.back();
+    this->col_ol_delivery_d.pop_back();
+    this->col_ol_quantity[tid] = this->col_ol_quantity.back();
+    this->col_ol_quantity.pop_back();
+    this->col_ol_amount[tid] = this->col_ol_amount.back();
+    this->col_ol_amount.pop_back();
+    this->col_ol_dist_info[tid] = this->col_ol_dist_info.back();
+    this->col_ol_dist_info.pop_back();
+  }
+  void loadFromTbl(std::istream& in) {
+    std::string buffer;
+    char nextChar;
+    while(in.good()) {
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_ol_o_id.push_back(Integer::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_ol_d_id.push_back(Integer::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_ol_w_id.push_back(Integer::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_ol_number.push_back(Integer::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_ol_i_id.push_back(Integer::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_ol_supply_w_id.push_back(Integer::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_ol_delivery_d.push_back(Timestamp::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_ol_quantity.push_back(Numeric<2,0>::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_ol_amount.push_back(Numeric<6,2>::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_ol_dist_info.push_back(Char<24>::castString(buffer.c_str(), buffer.size()));
+      if(nextChar != '\n') throw "expected end of line";
+    }
+    auto table_size = this->col_ol_o_id.size();
+    this->primary_key_idx.reserve(table_size);
+    for(size_t i = 0; i < table_size; i++) {
+      this->primary_key_idx.insert(std::make_pair(std::make_tuple(this->col_ol_w_id[i], this->col_ol_d_id[i], this->col_ol_o_id[i], this->col_ol_number[i]), i));
+    }
+  }
+  void loadFromTbl(std::istream&& in) {
+    loadFromTbl(in);
+  }
 };
-//-----------------------------------------------------------------------------
+//--------------------------------------------------
 struct item_t {
-  typedef std::tuple<
-    std::vector<Integer>, //i_id
-    std::vector<Integer>, //i_im_id
-    std::vector<Varchar<24>>, //i_name
-    std::vector<Numeric<5,2>>, //i_price
-    std::vector<Varchar<50>> //i_data
-  > storage_type;
-
-  auto size() {return std::get<0>(data).size();}
-
-  auto& i_id() { return std::get<0>(data); }
-  const auto& i_id() const { return std::get<0>(data); }
-  auto& i_im_id() { return std::get<1>(data); }
-  const auto& i_im_id() const { return std::get<1>(data); }
-  auto& i_name() { return std::get<2>(data); }
-  const auto& i_name() const { return std::get<2>(data); }
-  auto& i_price() { return std::get<3>(data); }
-  const auto& i_price() const { return std::get<3>(data); }
-  auto& i_data() { return std::get<4>(data); }
-  const auto& i_data() const { return std::get<4>(data); }
-  
-
-  class dereferenced_iterator {
-    public:
-      dereferenced_iterator(storage_type &data, size_t offset) : data(data), offset(offset) {}
-
-      auto& i_id() { return std::get<0>(data)[offset]; }
-      const auto& i_id() const { return std::get<0>(data)[offset]; }
-      auto& i_im_id() { return std::get<1>(data)[offset]; }
-      const auto& i_im_id() const { return std::get<1>(data)[offset]; }
-      auto& i_name() { return std::get<2>(data)[offset]; }
-      const auto& i_name() const { return std::get<2>(data)[offset]; }
-      auto& i_price() { return std::get<3>(data)[offset]; }
-      const auto& i_price() const { return std::get<3>(data)[offset]; }
-      auto& i_data() { return std::get<4>(data)[offset]; }
-      const auto& i_data() const { return std::get<4>(data)[offset]; }
-      
-    private:
-      storage_type &data;
-      size_t offset;
-  };
-
-  class iterator {
-    public:
-      typedef std::input_iterator_tag iterator_category; // actually not an input iterator. But this is the best fitting category
-      typedef dereferenced_iterator reference;
-      typedef dereferenced_iterator* pointer;
-      typedef dereferenced_iterator value_type;
-      typedef size_t difference_type;
-
-      iterator(storage_type &data, size_t offset) : data(data), offset(offset) {}
-
-      iterator& operator++() {++offset; return *this;}
-      iterator operator++(int) {auto copy = *this; offset++; return copy;}
-      iterator& operator--() {--offset; return *this;}
-      iterator operator--(int) {auto copy = *this; offset--; return copy;}
-
-      bool operator==(const iterator& rhs) const {return &data == &rhs.data && offset == rhs.offset;}
-      bool operator!=(const iterator& rhs) const {return !(*this == rhs);}
-
-      size_t operator-(const iterator& rhs) const {return offset - rhs.offset;}
-
-      auto operator*() { return dereferenced_iterator{data, offset}; }
-
-    private:
-      storage_type &data;
-      size_t offset;
-  };
-
-  auto begin() {return iterator{data, 0};}
-  auto end() {return iterator{data, size()};}
-
-  storage_type data;
+  std::vector<Integer> col_i_id;
+  std::vector<Integer> col_i_im_id;
+  std::vector<Varchar<24>> col_i_name;
+  std::vector<Numeric<5,2>> col_i_price;
+  std::vector<Varchar<50>> col_i_data;
+  std::unordered_map<std::tuple<Integer>, size_t> primary_key_idx;
+  void insert_tuple(Integer i_id, Integer i_im_id, Varchar<24> i_name, Numeric<5,2> i_price, Varchar<50> i_data) {
+    this->col_i_id.push_back(i_id);
+    this->col_i_im_id.push_back(i_im_id);
+    this->col_i_name.push_back(i_name);
+    this->col_i_price.push_back(i_price);
+    this->col_i_data.push_back(i_data);
+    this->primary_key_idx.insert(std::make_pair(std::make_tuple(i_id), this->col_i_id.size()));
+  }
+  void delete_tuple(size_t tid) {
+    this->primary_key_idx.erase(this->primary_key_idx.find(std::make_tuple(this->col_i_id[tid])));
+    this->primary_key_idx[std::make_tuple(this->col_i_id.back())] = tid;
+    this->col_i_id[tid] = this->col_i_id.back();
+    this->col_i_id.pop_back();
+    this->col_i_im_id[tid] = this->col_i_im_id.back();
+    this->col_i_im_id.pop_back();
+    this->col_i_name[tid] = this->col_i_name.back();
+    this->col_i_name.pop_back();
+    this->col_i_price[tid] = this->col_i_price.back();
+    this->col_i_price.pop_back();
+    this->col_i_data[tid] = this->col_i_data.back();
+    this->col_i_data.pop_back();
+  }
+  void loadFromTbl(std::istream& in) {
+    std::string buffer;
+    char nextChar;
+    while(in.good()) {
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_i_id.push_back(Integer::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_i_im_id.push_back(Integer::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_i_name.push_back(Varchar<24>::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_i_price.push_back(Numeric<5,2>::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_i_data.push_back(Varchar<50>::castString(buffer.c_str(), buffer.size()));
+      if(nextChar != '\n') throw "expected end of line";
+    }
+    auto table_size = this->col_i_id.size();
+    this->primary_key_idx.reserve(table_size);
+    for(size_t i = 0; i < table_size; i++) {
+      this->primary_key_idx.insert(std::make_pair(std::make_tuple(this->col_i_id[i]), i));
+    }
+  }
+  void loadFromTbl(std::istream&& in) {
+    loadFromTbl(in);
+  }
 };
-//-----------------------------------------------------------------------------
+//--------------------------------------------------
 struct stock_t {
-  typedef std::tuple<
-    std::vector<Integer>, //s_i_id
-    std::vector<Integer>, //s_w_id
-    std::vector<Numeric<4,0>>, //s_quantity
-    std::vector<Char<24>>, //s_dist_01
-    std::vector<Char<24>>, //s_dist_02
-    std::vector<Char<24>>, //s_dist_03
-    std::vector<Char<24>>, //s_dist_04
-    std::vector<Char<24>>, //s_dist_05
-    std::vector<Char<24>>, //s_dist_06
-    std::vector<Char<24>>, //s_dist_07
-    std::vector<Char<24>>, //s_dist_08
-    std::vector<Char<24>>, //s_dist_09
-    std::vector<Char<24>>, //s_dist_10
-    std::vector<Numeric<8,0>>, //s_ytd
-    std::vector<Numeric<4,0>>, //s_order_cnt
-    std::vector<Numeric<4,0>>, //s_remote_cnt
-    std::vector<Varchar<50>> //s_data
-  > storage_type;
-
-  auto size() {return std::get<0>(data).size();}
-
-  auto& s_i_id() { return std::get<0>(data); }
-  const auto& s_i_id() const { return std::get<0>(data); }
-  auto& s_w_id() { return std::get<1>(data); }
-  const auto& s_w_id() const { return std::get<1>(data); }
-  auto& s_quantity() { return std::get<2>(data); }
-  const auto& s_quantity() const { return std::get<2>(data); }
-  auto& s_dist_01() { return std::get<3>(data); }
-  const auto& s_dist_01() const { return std::get<3>(data); }
-  auto& s_dist_02() { return std::get<4>(data); }
-  const auto& s_dist_02() const { return std::get<4>(data); }
-  auto& s_dist_03() { return std::get<5>(data); }
-  const auto& s_dist_03() const { return std::get<5>(data); }
-  auto& s_dist_04() { return std::get<6>(data); }
-  const auto& s_dist_04() const { return std::get<6>(data); }
-  auto& s_dist_05() { return std::get<7>(data); }
-  const auto& s_dist_05() const { return std::get<7>(data); }
-  auto& s_dist_06() { return std::get<8>(data); }
-  const auto& s_dist_06() const { return std::get<8>(data); }
-  auto& s_dist_07() { return std::get<9>(data); }
-  const auto& s_dist_07() const { return std::get<9>(data); }
-  auto& s_dist_08() { return std::get<10>(data); }
-  const auto& s_dist_08() const { return std::get<10>(data); }
-  auto& s_dist_09() { return std::get<11>(data); }
-  const auto& s_dist_09() const { return std::get<11>(data); }
-  auto& s_dist_10() { return std::get<12>(data); }
-  const auto& s_dist_10() const { return std::get<12>(data); }
-  auto& s_ytd() { return std::get<13>(data); }
-  const auto& s_ytd() const { return std::get<13>(data); }
-  auto& s_order_cnt() { return std::get<14>(data); }
-  const auto& s_order_cnt() const { return std::get<14>(data); }
-  auto& s_remote_cnt() { return std::get<15>(data); }
-  const auto& s_remote_cnt() const { return std::get<15>(data); }
-  auto& s_data() { return std::get<16>(data); }
-  const auto& s_data() const { return std::get<16>(data); }
-  
-
-  class dereferenced_iterator {
-    public:
-      dereferenced_iterator(storage_type &data, size_t offset) : data(data), offset(offset) {}
-
-      auto& s_i_id() { return std::get<0>(data)[offset]; }
-      const auto& s_i_id() const { return std::get<0>(data)[offset]; }
-      auto& s_w_id() { return std::get<1>(data)[offset]; }
-      const auto& s_w_id() const { return std::get<1>(data)[offset]; }
-      auto& s_quantity() { return std::get<2>(data)[offset]; }
-      const auto& s_quantity() const { return std::get<2>(data)[offset]; }
-      auto& s_dist_01() { return std::get<3>(data)[offset]; }
-      const auto& s_dist_01() const { return std::get<3>(data)[offset]; }
-      auto& s_dist_02() { return std::get<4>(data)[offset]; }
-      const auto& s_dist_02() const { return std::get<4>(data)[offset]; }
-      auto& s_dist_03() { return std::get<5>(data)[offset]; }
-      const auto& s_dist_03() const { return std::get<5>(data)[offset]; }
-      auto& s_dist_04() { return std::get<6>(data)[offset]; }
-      const auto& s_dist_04() const { return std::get<6>(data)[offset]; }
-      auto& s_dist_05() { return std::get<7>(data)[offset]; }
-      const auto& s_dist_05() const { return std::get<7>(data)[offset]; }
-      auto& s_dist_06() { return std::get<8>(data)[offset]; }
-      const auto& s_dist_06() const { return std::get<8>(data)[offset]; }
-      auto& s_dist_07() { return std::get<9>(data)[offset]; }
-      const auto& s_dist_07() const { return std::get<9>(data)[offset]; }
-      auto& s_dist_08() { return std::get<10>(data)[offset]; }
-      const auto& s_dist_08() const { return std::get<10>(data)[offset]; }
-      auto& s_dist_09() { return std::get<11>(data)[offset]; }
-      const auto& s_dist_09() const { return std::get<11>(data)[offset]; }
-      auto& s_dist_10() { return std::get<12>(data)[offset]; }
-      const auto& s_dist_10() const { return std::get<12>(data)[offset]; }
-      auto& s_ytd() { return std::get<13>(data)[offset]; }
-      const auto& s_ytd() const { return std::get<13>(data)[offset]; }
-      auto& s_order_cnt() { return std::get<14>(data)[offset]; }
-      const auto& s_order_cnt() const { return std::get<14>(data)[offset]; }
-      auto& s_remote_cnt() { return std::get<15>(data)[offset]; }
-      const auto& s_remote_cnt() const { return std::get<15>(data)[offset]; }
-      auto& s_data() { return std::get<16>(data)[offset]; }
-      const auto& s_data() const { return std::get<16>(data)[offset]; }
-      
-    private:
-      storage_type &data;
-      size_t offset;
-  };
-
-  class iterator {
-    public:
-      typedef std::input_iterator_tag iterator_category; // actually not an input iterator. But this is the best fitting category
-      typedef dereferenced_iterator reference;
-      typedef dereferenced_iterator* pointer;
-      typedef dereferenced_iterator value_type;
-      typedef size_t difference_type;
-
-      iterator(storage_type &data, size_t offset) : data(data), offset(offset) {}
-
-      iterator& operator++() {++offset; return *this;}
-      iterator operator++(int) {auto copy = *this; offset++; return copy;}
-      iterator& operator--() {--offset; return *this;}
-      iterator operator--(int) {auto copy = *this; offset--; return copy;}
-
-      bool operator==(const iterator& rhs) const {return &data == &rhs.data && offset == rhs.offset;}
-      bool operator!=(const iterator& rhs) const {return !(*this == rhs);}
-
-      size_t operator-(const iterator& rhs) const {return offset - rhs.offset;}
-
-      auto operator*() { return dereferenced_iterator{data, offset}; }
-
-    private:
-      storage_type &data;
-      size_t offset;
-  };
-
-  auto begin() {return iterator{data, 0};}
-  auto end() {return iterator{data, size()};}
-
-  storage_type data;
+  std::vector<Integer> col_s_i_id;
+  std::vector<Integer> col_s_w_id;
+  std::vector<Numeric<4,0>> col_s_quantity;
+  std::vector<Char<24>> col_s_dist_01;
+  std::vector<Char<24>> col_s_dist_02;
+  std::vector<Char<24>> col_s_dist_03;
+  std::vector<Char<24>> col_s_dist_04;
+  std::vector<Char<24>> col_s_dist_05;
+  std::vector<Char<24>> col_s_dist_06;
+  std::vector<Char<24>> col_s_dist_07;
+  std::vector<Char<24>> col_s_dist_08;
+  std::vector<Char<24>> col_s_dist_09;
+  std::vector<Char<24>> col_s_dist_10;
+  std::vector<Numeric<8,0>> col_s_ytd;
+  std::vector<Numeric<4,0>> col_s_order_cnt;
+  std::vector<Numeric<4,0>> col_s_remote_cnt;
+  std::vector<Varchar<50>> col_s_data;
+  std::unordered_map<std::tuple<Integer, Integer>, size_t> primary_key_idx;
+  void insert_tuple(Integer s_i_id, Integer s_w_id, Numeric<4,0> s_quantity, Char<24> s_dist_01, Char<24> s_dist_02, Char<24> s_dist_03, Char<24> s_dist_04, Char<24> s_dist_05, Char<24> s_dist_06, Char<24> s_dist_07, Char<24> s_dist_08, Char<24> s_dist_09, Char<24> s_dist_10, Numeric<8,0> s_ytd, Numeric<4,0> s_order_cnt, Numeric<4,0> s_remote_cnt, Varchar<50> s_data) {
+    this->col_s_i_id.push_back(s_i_id);
+    this->col_s_w_id.push_back(s_w_id);
+    this->col_s_quantity.push_back(s_quantity);
+    this->col_s_dist_01.push_back(s_dist_01);
+    this->col_s_dist_02.push_back(s_dist_02);
+    this->col_s_dist_03.push_back(s_dist_03);
+    this->col_s_dist_04.push_back(s_dist_04);
+    this->col_s_dist_05.push_back(s_dist_05);
+    this->col_s_dist_06.push_back(s_dist_06);
+    this->col_s_dist_07.push_back(s_dist_07);
+    this->col_s_dist_08.push_back(s_dist_08);
+    this->col_s_dist_09.push_back(s_dist_09);
+    this->col_s_dist_10.push_back(s_dist_10);
+    this->col_s_ytd.push_back(s_ytd);
+    this->col_s_order_cnt.push_back(s_order_cnt);
+    this->col_s_remote_cnt.push_back(s_remote_cnt);
+    this->col_s_data.push_back(s_data);
+    this->primary_key_idx.insert(std::make_pair(std::make_tuple(s_w_id, s_i_id), this->col_s_i_id.size()));
+  }
+  void delete_tuple(size_t tid) {
+    this->primary_key_idx.erase(this->primary_key_idx.find(std::make_tuple(this->col_s_w_id[tid], this->col_s_i_id[tid])));
+    this->primary_key_idx[std::make_tuple(this->col_s_w_id.back(), this->col_s_i_id.back())] = tid;
+    this->col_s_i_id[tid] = this->col_s_i_id.back();
+    this->col_s_i_id.pop_back();
+    this->col_s_w_id[tid] = this->col_s_w_id.back();
+    this->col_s_w_id.pop_back();
+    this->col_s_quantity[tid] = this->col_s_quantity.back();
+    this->col_s_quantity.pop_back();
+    this->col_s_dist_01[tid] = this->col_s_dist_01.back();
+    this->col_s_dist_01.pop_back();
+    this->col_s_dist_02[tid] = this->col_s_dist_02.back();
+    this->col_s_dist_02.pop_back();
+    this->col_s_dist_03[tid] = this->col_s_dist_03.back();
+    this->col_s_dist_03.pop_back();
+    this->col_s_dist_04[tid] = this->col_s_dist_04.back();
+    this->col_s_dist_04.pop_back();
+    this->col_s_dist_05[tid] = this->col_s_dist_05.back();
+    this->col_s_dist_05.pop_back();
+    this->col_s_dist_06[tid] = this->col_s_dist_06.back();
+    this->col_s_dist_06.pop_back();
+    this->col_s_dist_07[tid] = this->col_s_dist_07.back();
+    this->col_s_dist_07.pop_back();
+    this->col_s_dist_08[tid] = this->col_s_dist_08.back();
+    this->col_s_dist_08.pop_back();
+    this->col_s_dist_09[tid] = this->col_s_dist_09.back();
+    this->col_s_dist_09.pop_back();
+    this->col_s_dist_10[tid] = this->col_s_dist_10.back();
+    this->col_s_dist_10.pop_back();
+    this->col_s_ytd[tid] = this->col_s_ytd.back();
+    this->col_s_ytd.pop_back();
+    this->col_s_order_cnt[tid] = this->col_s_order_cnt.back();
+    this->col_s_order_cnt.pop_back();
+    this->col_s_remote_cnt[tid] = this->col_s_remote_cnt.back();
+    this->col_s_remote_cnt.pop_back();
+    this->col_s_data[tid] = this->col_s_data.back();
+    this->col_s_data.pop_back();
+  }
+  void loadFromTbl(std::istream& in) {
+    std::string buffer;
+    char nextChar;
+    while(in.good()) {
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_s_i_id.push_back(Integer::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_s_w_id.push_back(Integer::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_s_quantity.push_back(Numeric<4,0>::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_s_dist_01.push_back(Char<24>::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_s_dist_02.push_back(Char<24>::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_s_dist_03.push_back(Char<24>::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_s_dist_04.push_back(Char<24>::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_s_dist_05.push_back(Char<24>::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_s_dist_06.push_back(Char<24>::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_s_dist_07.push_back(Char<24>::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_s_dist_08.push_back(Char<24>::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_s_dist_09.push_back(Char<24>::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_s_dist_10.push_back(Char<24>::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_s_ytd.push_back(Numeric<8,0>::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_s_order_cnt.push_back(Numeric<4,0>::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_s_remote_cnt.push_back(Numeric<4,0>::castString(buffer.c_str(), buffer.size()));
+      if(nextChar == '\n') throw "unexpected end of line";
+      buffer.clear();
+      nextChar = in.peek();
+      while(nextChar != '|' && nextChar != '\n') { buffer.push_back(nextChar); nextChar = in.get(); }
+      this->col_s_data.push_back(Varchar<50>::castString(buffer.c_str(), buffer.size()));
+      if(nextChar != '\n') throw "expected end of line";
+    }
+    auto table_size = this->col_s_i_id.size();
+    this->primary_key_idx.reserve(table_size);
+    for(size_t i = 0; i < table_size; i++) {
+      this->primary_key_idx.insert(std::make_pair(std::make_tuple(this->col_s_w_id[i], this->col_s_i_id[i]), i));
+    }
+  }
+  void loadFromTbl(std::istream&& in) {
+    loadFromTbl(in);
+  }
 };
-//-----------------------------------------------------------------------------
-extern warehouse_t warehouse;
-extern district_t district;
-extern customer_t customer;
-extern history_t history;
-extern neworder_t neworder;
-extern order_t order;
-extern orderline_t orderline;
-extern item_t item;
-extern stock_t stock;
-//-----------------------------------------------------------------------------
+//--------------------------------------------------
+} //namespace table
+//--------------------------------------------------
+struct table_data {
+  tables::warehouse_t warehouse;
+  tables::district_t district;
+  tables::customer_t customer;
+  tables::history_t history;
+  tables::neworder_t neworder;
+  tables::order_t order;
+  tables::orderline_t orderline;
+  tables::item_t item;
+  tables::stock_t stock;
+};
 #endif

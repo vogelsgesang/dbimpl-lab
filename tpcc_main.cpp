@@ -1,38 +1,30 @@
 #include <iostream>
 #include <fstream>
+#include <memory>
 #include <ctime>
 #include "schema/GeneratedSchema.hpp"
-#include "schema/parseTbl.hpp"
 #include "schema/Types.hpp"
 #include "queries/neworderrandom.hpp"
 
 using namespace std;
 
-warehouse_t warehouse;
-district_t district;
-customer_t customer;
-history_t history;
-neworder_t neworder;
-order_t order;
-orderline_t orderline;
-item_t item;
-stock_t stock;
-
 int main() {
+  auto tables = std::make_unique<table_data>();
   //load all the tables from disk
   try {
     auto data_folder = std::string{"data/"};
-    loadTblFromFile(&warehouse, (data_folder + "tpcc_warehouse.tbl").c_str());  
-    loadTblFromFile(&district, (data_folder + "tpcc_district.tbl").c_str());  
-    loadTblFromFile(&customer, (data_folder + "tpcc_customer.tbl").c_str());  
-    loadTblFromFile(&history, (data_folder + "tpcc_history.tbl").c_str());  
-    loadTblFromFile(&neworder, (data_folder + "tpcc_neworder.tbl").c_str());  
-    loadTblFromFile(&order, (data_folder + "tpcc_order.tbl").c_str());  
-    loadTblFromFile(&orderline, (data_folder + "tpcc_orderline.tbl").c_str());  
-    loadTblFromFile(&item, (data_folder + "tpcc_item.tbl").c_str());  
-    loadTblFromFile(&stock, (data_folder + "tpcc_stock.tbl").c_str());  
+    tables->warehouse.loadFromTbl(std::ifstream((data_folder + "tpcc_warehouse.tbl").c_str()));
+    tables->district.loadFromTbl(std::ifstream((data_folder + "tpcc_district.tbl").c_str()));
+    tables->customer.loadFromTbl(std::ifstream((data_folder + "tpcc_customer.tbl").c_str()));
+    tables->history.loadFromTbl(std::ifstream((data_folder + "tpcc_history.tbl").c_str()));
+    tables->neworder.loadFromTbl(std::ifstream((data_folder + "tpcc_neworder.tbl").c_str()));
+    tables->order.loadFromTbl(std::ifstream((data_folder + "tpcc_order.tbl").c_str()));
+    tables->orderline.loadFromTbl(std::ifstream((data_folder + "tpcc_orderline.tbl").c_str()));
+    tables->item.loadFromTbl(std::ifstream((data_folder + "tpcc_item.tbl").c_str()));
+    tables->stock.loadFromTbl(std::ifstream((data_folder + "tpcc_stock.tbl").c_str()));
   } catch(const char* e) {
     std::cout << e << std::endl;
+    return -1;
   }
 
   clock_t begin_time = clock();

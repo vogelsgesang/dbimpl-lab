@@ -40,6 +40,8 @@ void Schema::generateCppCode(std::ostream& out) {
     "#include <istream>\n"
     "#include \"utils/tupleHash.hpp\"\n"
     "#include \"schema/Types.hpp\"\n";
+  out << "//--------------------------------------------------\n"
+         "namespace tables {\n";
   for(auto& table : tables) {
     out << "//--------------------------------------------------\n"
            "struct " << table.name << "_t {\n";
@@ -159,9 +161,19 @@ void Schema::generateCppCode(std::ostream& out) {
     }
     out << "    }\n"
            "  }\n";
+    out << "  void loadFromTbl(std::istream&& in) {\n"
+        << "    loadFromTbl(in);\n"
+        << "  }\n";
     //finish struct
     out << "};\n";
   }
   out << "//--------------------------------------------------\n"
-         "#endif";
+         "} //namespace table\n"
+         "//--------------------------------------------------\n"
+         "struct table_data {\n";
+  for(auto& table : tables) {
+    out << "  tables::" << table.name << "_t " << table.name << ";\n";
+  }
+  out << "};\n"
+         "#endif\n";
 }
