@@ -21,13 +21,78 @@ static std::string translateType(const DataType& type) {
 }
 
 template<typename T, typename Callable>
-static void generateList(std::ostream& out, const std::vector<T>& elements, Callable cb, std::string seperator = ", ") {
+static void generateList(std::ostream& out, const std::vector<T>& elements,
+                         Callable cb, std::string seperator = ", ") {
   auto first = true;
   for(const auto& elem : elements) {
     if(!first) out << seperator;
     cb(out, elem);
     first = false;
   }
+}
+
+static void generateIndexMember(std::ostream& out, const TableDescription& table,
+                                const std::string& idxName, const std::vector<unsigned>& idxCols,
+                                bool prefixIndexable, bool unique){
+  out << "  ";
+  if(unique) {
+    if(prefixIndexable) out << "std::map";
+    else out << "std::unordered_map";
+  } else {
+    if(prefixIndexable) out << "std::multimap";
+    else out << "std::unordered_multimap";
+  }
+  out << "<std::tuple<";
+  generateList(out, idxCols, [&](auto& out, auto& col){
+           out << translateType(table.columns[col].type);
+      });
+  out << ">, size_t> " << idxName << ";\n";
+}
+
+static void generateIndexInsert(std::ostream& out, const TableDescription& table,
+                                const std::string& idxName, const std::vector<unsigned>& idxCols){
+  out << "    this->" << idxName << ".insert(std::make_pair(std::make_tuple(";
+  generateList(out, idxCols, [&](auto& out, auto& col){
+          out << table.columns[col].name;
+      });
+  out << "), this->col_" << table.columns[0].name << ".size()));\n";
+}
+
+static void generateUniqueIndexDelete(std::ostream& out, const TableDescription& table,
+                                      const std::string& idxName, const std::vector<unsigned>& idxCols){
+  out << "    this->" << idxName << ".erase(this->"
+      << idxName << ".find(std::make_tuple(";
+  generateList(out, idxCols, [&](auto& out, auto& col){
+          out << "this->col_" << table.columns[col].name << "[tid]";
+      });
+  out << ")));\n";
+  out << "    this->" << idxName << "[std::make_tuple(";
+  generateList(out, idxCols, [&](auto& out, auto& col){
+          out << "this->col_" << table.columns[col].name << ".back()";
+      });
+  out << ")] = tid;\n";
+}
+
+auto generateIndexDelete(std::ostream& out, const TableDescription& table,
+                         const std::string& idxName, const std::vector<unsigned>& idxCols){
+  out << "    {\n";
+  out << "      auto deleted_range = this->" << idxName << ".equal_range(std::make_tuple(";
+  generateList(out, idxCols, [&](auto& out, auto& col){
+          out << "this->col_" << table.columns[col].name << "[tid]";
+      });
+  out << "));\n"
+         "      this->" << idxName << ".erase(std::find_if(\n"
+         "         deleted_range.first, deleted_range.second,\n"
+         "         [tid](auto& e){return e.second == tid;}));\n"
+         "      auto replacement_range = this->" << idxName << ".equal_range(std::make_tuple(";
+  generateList(out, idxCols, [&](auto& out, auto& col){
+          out << "this->col_" << table.columns[col].name << ".back()";
+      });
+  out << "));\n";
+  out << "      auto replacement_tid = this->col_" << table.columns[0].name << ".size();\n"
+         "      (std::find_if(replacement_range.first, replacement_range.second,\n"
+         "          [replacement_tid](auto& e){return e.second == replacement_tid;}))->second = tid;\n"
+         "    }\n";
 }
 
 void Schema::generateCppCode(std::ostream& out) {
@@ -50,28 +115,13 @@ void Schema::generateCppCode(std::ostream& out) {
     for(auto& column : table.columns) {
       out << "  std::vector<" << translateType(column.type) << "> col_" << column.name << ";\n";
     }
-    auto generateIndexMember = [&](const std::string& idxName, const std::vector<unsigned>& idxCols, bool prefixIndexable, bool unique){
-      out << "  ";
-      if(unique) {
-        if(prefixIndexable) out << "std::map";
-        else out << "std::unordered_map";
-      } else {
-        if(prefixIndexable) out << "std::multimap";
-        else out << "std::unordered_multimap";
-      }
-      out << "<std::tuple<";
-      generateList(out, idxCols, [&](auto& out, auto& col){
-               out << translateType(table.columns[col].type);
-          });
-      out << ">, size_t> " << idxName << ";\n";
-    };
     // primary key index
     if(!table.primaryKey.empty()) {
-      generateIndexMember("primary_key_idx", table.primaryKey, table.primaryKeyPrefixIndexable, true);
+      generateIndexMember(out, table, "primary_key_idx", table.primaryKey, table.primaryKeyPrefixIndexable, true);
     }
     // additional idcs
     for(auto& idx : table.indices) {
-      generateIndexMember("idx_" + idx.name, idx.columns, idx.prefixIndexable, false);
+      generateIndexMember(out, table, "idx_" + idx.name, idx.columns, idx.prefixIndexable, false);
     }
     // insert
     out << "  void insert_tuple(";
@@ -82,60 +132,20 @@ void Schema::generateCppCode(std::ostream& out) {
     for(auto& column : table.columns) {
       out << "    this->col_" << column.name << ".push_back(" << column.name << ");\n";
     }
-    auto generateIndexInsert = [&](const std::string& idxName, const std::vector<unsigned>& idxCols){
-      out << "    this->" << idxName << ".insert(std::make_pair(std::make_tuple(";
-      generateList(out, idxCols, [&](auto& out, auto& col){
-              out << table.columns[col].name;
-          });
-      out << "), this->col_" << table.columns[0].name << ".size()));\n";
-    };
     if(!table.primaryKey.empty()) {
-      generateIndexInsert("primary_key_idx", table.primaryKey);
+      generateIndexInsert(out, table, "primary_key_idx", table.primaryKey);
     }
     for(auto& idx : table.indices) {
-      generateIndexInsert("idx_" + idx.name, idx.columns);
+      generateIndexInsert(out, table, "idx_" + idx.name, idx.columns);
     }
     out << "  }\n";
     // delete
     out << "  void delete_tuple(size_t tid) {\n";
-    auto generateUniqueIndexDelete = [&](const std::string& idxName, const std::vector<unsigned>& idxCols){
-      out << "    this->" << idxName << ".erase(this->"
-          << idxName << ".find(std::make_tuple(";
-      generateList(out, idxCols, [&](auto& out, auto& col){
-              out << "this->col_" << table.columns[col].name << "[tid]";
-          });
-      out << ")));\n";
-      out << "    this->" << idxName << "[std::make_tuple(";
-      generateList(out, idxCols, [&](auto& out, auto& col){
-              out << "this->col_" << table.columns[col].name << ".back()";
-          });
-      out << ")] = tid;\n";
-    };
-    auto generateIndexDelete = [&](const std::string& idxName, const std::vector<unsigned>& idxCols){
-      out << "    {\n";
-      out << "      auto deleted_range = this->" << idxName << ".equal_range(std::make_tuple(";
-      generateList(out, idxCols, [&](auto& out, auto& col){
-              out << "this->col_" << table.columns[col].name << "[tid]";
-          });
-      out << "));\n"
-             "      this->" << idxName << ".erase(std::find_if(\n"
-             "         deleted_range.first, deleted_range.second,\n"
-             "         [tid](auto& e){return e.second == tid;}));\n"
-             "      auto replacement_range = this->" << idxName << ".equal_range(std::make_tuple(";
-      generateList(out, idxCols, [&](auto& out, auto& col){
-              out << "this->col_" << table.columns[col].name << ".back()";
-          });
-      out << "));\n";
-      out << "      auto replacement_tid = this->col_" << table.columns[0].name << ".size();\n"
-             "      (std::find_if(replacement_range.first, replacement_range.second,\n"
-             "          [replacement_tid](auto& e){return e.second == replacement_tid;}))->second = tid;\n"
-             "    }\n";
-    };
     if(!table.primaryKey.empty()) {
-      generateUniqueIndexDelete("primary_key_idx", table.primaryKey);
+      generateUniqueIndexDelete(out, table, "primary_key_idx", table.primaryKey);
     }
     for(auto& idx : table.indices) {
-      generateIndexDelete("idx_" + idx.name, idx.columns);
+      generateIndexDelete(out, table, "idx_" + idx.name, idx.columns);
     }
     for(auto& column : table.columns) {
       out << "    this->col_" << column.name << "[tid] = this->col_" << column.name << ".back();\n";
