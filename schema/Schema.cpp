@@ -37,6 +37,7 @@ void Schema::generateCppCode(std::ostream& out) {
     "#include <vector>\n"
     "#include <map>\n"
     "#include <unordered_map>\n"
+    "#include <algorithm>\n"
     "#include <istream>\n"
     "#include \"utils/tupleHash.hpp\"\n"
     "#include \"schema/Types.hpp\"\n";
@@ -49,29 +50,28 @@ void Schema::generateCppCode(std::ostream& out) {
     for(auto& column : table.columns) {
       out << "  std::vector<" << translateType(column.type) << "> col_" << column.name << ";\n";
     }
-    // primary key index
-    if(!table.primaryKey.empty()) {
-      if(table.primaryKeyPrefixIndexable) {
-        out << "  std::map<std::tuple<";
+    auto generateIndexMember = [&](const std::string& idxName, const std::vector<unsigned>& idxCols, bool prefixIndexable, bool unique){
+      out << "  ";
+      if(unique) {
+        if(prefixIndexable) out << "std::map";
+        else out << "std::unordered_map";
       } else {
-        out << "  std::unordered_map<std::tuple<";
+        if(prefixIndexable) out << "std::multimap";
+        else out << "std::unordered_multimap";
       }
-      generateList(out, table.primaryKey, [&](auto& out, auto& col){
+      out << "<std::tuple<";
+      generateList(out, idxCols, [&](auto& out, auto& col){
                out << translateType(table.columns[col].type);
           });
-      out << ">, size_t> primary_key_idx;\n";
+      out << ">, size_t> " << idxName << ";\n";
+    };
+    // primary key index
+    if(!table.primaryKey.empty()) {
+      generateIndexMember("primary_key_idx", table.primaryKey, table.primaryKeyPrefixIndexable, true);
     }
     // additional idcs
     for(auto& idx : table.indices) {
-      if(idx.prefixIndexable) {
-        out << "  std::map<std::tuple<";
-      } else {
-        out << "  std::unordered_map<std::tuple<";
-      }
-      generateList(out, idx.columns, [&](auto& out, auto& col){
-               out << translateType(table.columns[col].type);
-          });
-      out << ">, size_t> idx_" << idx.name << ";\n";
+      generateIndexMember("idx_" + idx.name, idx.columns, idx.prefixIndexable, false);
     }
     // insert
     out << "  void insert_tuple(";
@@ -98,7 +98,7 @@ void Schema::generateCppCode(std::ostream& out) {
     out << "  }\n";
     // delete
     out << "  void delete_tuple(size_t tid) {\n";
-    auto generateIndexDelete = [&](const std::string& idxName, const std::vector<unsigned>& idxCols){
+    auto generateUniqueIndexDelete = [&](const std::string& idxName, const std::vector<unsigned>& idxCols){
       out << "    this->" << idxName << ".erase(this->"
           << idxName << ".find(std::make_tuple(";
       generateList(out, idxCols, [&](auto& out, auto& col){
@@ -111,8 +111,28 @@ void Schema::generateCppCode(std::ostream& out) {
           });
       out << ")] = tid;\n";
     };
+    auto generateIndexDelete = [&](const std::string& idxName, const std::vector<unsigned>& idxCols){
+      out << "    {\n";
+      out << "      auto deleted_range = this->" << idxName << ".equal_range(std::make_tuple(";
+      generateList(out, idxCols, [&](auto& out, auto& col){
+              out << "this->col_" << table.columns[col].name << "[tid]";
+          });
+      out << "));\n"
+             "      this->" << idxName << ".erase(std::find_if(\n"
+             "         deleted_range.first, deleted_range.second,\n"
+             "         [tid](auto& e){return e.second == tid;}));\n"
+             "      auto replacement_range = this->" << idxName << ".equal_range(std::make_tuple(";
+      generateList(out, idxCols, [&](auto& out, auto& col){
+              out << "this->col_" << table.columns[col].name << ".back()";
+          });
+      out << "));\n";
+      out << "      auto replacement_tid = this->col_" << table.columns[0].name << ".size();\n"
+             "      (std::find_if(replacement_range.first, replacement_range.second,\n"
+             "          [replacement_tid](auto& e){return e.second == replacement_tid;}))->second = tid;\n"
+             "    }\n";
+    };
     if(!table.primaryKey.empty()) {
-      generateIndexDelete("primary_key_idx", table.primaryKey);
+      generateUniqueIndexDelete("primary_key_idx", table.primaryKey);
     }
     for(auto& idx : table.indices) {
       generateIndexDelete("idx_" + idx.name, idx.columns);

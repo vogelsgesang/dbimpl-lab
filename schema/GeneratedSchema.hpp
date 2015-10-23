@@ -3,6 +3,7 @@
 #include <vector>
 #include <map>
 #include <unordered_map>
+#include <algorithm>
 #include <istream>
 #include "utils/tupleHash.hpp"
 #include "schema/Types.hpp"
@@ -262,7 +263,7 @@ struct customer_t {
   std::vector<Numeric<4,0>> col_c_delivery_cnt;
   std::vector<Varchar<500>> col_c_data;
   std::unordered_map<std::tuple<Integer, Integer, Integer>, size_t> primary_key_idx;
-  std::unordered_map<std::tuple<Integer, Integer, Varchar<16>, Varchar<16>>, size_t> idx_customer_wdl;
+  std::unordered_multimap<std::tuple<Integer, Integer, Varchar<16>, Varchar<16>>, size_t> idx_customer_wdl;
   void insert_tuple(Integer c_id, Integer c_d_id, Integer c_w_id, Varchar<16> c_first, Char<2> c_middle, Varchar<16> c_last, Varchar<20> c_street_1, Varchar<20> c_street_2, Varchar<20> c_city, Char<2> c_state, Char<9> c_zip, Char<16> c_phone, Timestamp c_since, Char<2> c_credit, Numeric<12,2> c_credit_lim, Numeric<4,4> c_discount, Numeric<12,2> c_balance, Numeric<12,2> c_ytd_paymenr, Numeric<4,0> c_payment_cnt, Numeric<4,0> c_delivery_cnt, Varchar<500> c_data) {
     this->col_c_id.push_back(c_id);
     this->col_c_d_id.push_back(c_d_id);
@@ -291,8 +292,16 @@ struct customer_t {
   void delete_tuple(size_t tid) {
     this->primary_key_idx.erase(this->primary_key_idx.find(std::make_tuple(this->col_c_w_id[tid], this->col_c_d_id[tid], this->col_c_id[tid])));
     this->primary_key_idx[std::make_tuple(this->col_c_w_id.back(), this->col_c_d_id.back(), this->col_c_id.back())] = tid;
-    this->idx_customer_wdl.erase(this->idx_customer_wdl.find(std::make_tuple(this->col_c_w_id[tid], this->col_c_d_id[tid], this->col_c_last[tid], this->col_c_first[tid])));
-    this->idx_customer_wdl[std::make_tuple(this->col_c_w_id.back(), this->col_c_d_id.back(), this->col_c_last.back(), this->col_c_first.back())] = tid;
+    {
+      auto deleted_range = this->idx_customer_wdl.equal_range(std::make_tuple(this->col_c_w_id[tid], this->col_c_d_id[tid], this->col_c_last[tid], this->col_c_first[tid]));
+      this->idx_customer_wdl.erase(std::find_if(
+         deleted_range.first, deleted_range.second,
+         [tid](auto& e){return e.second == tid;}));
+      auto replacement_range = this->idx_customer_wdl.equal_range(std::make_tuple(this->col_c_w_id.back(), this->col_c_d_id.back(), this->col_c_last.back(), this->col_c_first.back()));
+      auto replacement_tid = this->col_c_id.size();
+      (std::find_if(replacement_range.first, replacement_range.second,
+          [replacement_tid](auto& e){return e.second == replacement_tid;}))->second = tid;
+    }
     this->col_c_id[tid] = this->col_c_id.back();
     this->col_c_id.pop_back();
     this->col_c_d_id[tid] = this->col_c_d_id.back();
@@ -612,7 +621,7 @@ struct order_t {
   std::vector<Numeric<2,0>> col_o_ol_cnt;
   std::vector<Numeric<1,0>> col_o_all_local;
   std::unordered_map<std::tuple<Integer, Integer, Integer>, size_t> primary_key_idx;
-  std::unordered_map<std::tuple<Integer, Integer, Integer, Integer>, size_t> idx_order_wdc;
+  std::unordered_multimap<std::tuple<Integer, Integer, Integer, Integer>, size_t> idx_order_wdc;
   void insert_tuple(Integer o_id, Integer o_d_id, Integer o_w_id, Integer o_c_id, Timestamp o_entry_d, Integer o_carrier_id, Numeric<2,0> o_ol_cnt, Numeric<1,0> o_all_local) {
     this->col_o_id.push_back(o_id);
     this->col_o_d_id.push_back(o_d_id);
@@ -628,8 +637,16 @@ struct order_t {
   void delete_tuple(size_t tid) {
     this->primary_key_idx.erase(this->primary_key_idx.find(std::make_tuple(this->col_o_w_id[tid], this->col_o_d_id[tid], this->col_o_id[tid])));
     this->primary_key_idx[std::make_tuple(this->col_o_w_id.back(), this->col_o_d_id.back(), this->col_o_id.back())] = tid;
-    this->idx_order_wdc.erase(this->idx_order_wdc.find(std::make_tuple(this->col_o_w_id[tid], this->col_o_d_id[tid], this->col_o_c_id[tid], this->col_o_id[tid])));
-    this->idx_order_wdc[std::make_tuple(this->col_o_w_id.back(), this->col_o_d_id.back(), this->col_o_c_id.back(), this->col_o_id.back())] = tid;
+    {
+      auto deleted_range = this->idx_order_wdc.equal_range(std::make_tuple(this->col_o_w_id[tid], this->col_o_d_id[tid], this->col_o_c_id[tid], this->col_o_id[tid]));
+      this->idx_order_wdc.erase(std::find_if(
+         deleted_range.first, deleted_range.second,
+         [tid](auto& e){return e.second == tid;}));
+      auto replacement_range = this->idx_order_wdc.equal_range(std::make_tuple(this->col_o_w_id.back(), this->col_o_d_id.back(), this->col_o_c_id.back(), this->col_o_id.back()));
+      auto replacement_tid = this->col_o_id.size();
+      (std::find_if(replacement_range.first, replacement_range.second,
+          [replacement_tid](auto& e){return e.second == replacement_tid;}))->second = tid;
+    }
     this->col_o_id[tid] = this->col_o_id.back();
     this->col_o_id.pop_back();
     this->col_o_d_id[tid] = this->col_o_d_id.back();
