@@ -84,7 +84,7 @@ void Schema::generateCppCode(std::ostream& out) {
       generateList(out, idxCols, [&](auto& out, auto& col){
               out << table.columns[col].name;
           });
-      out << "), this->col_" << table.columns[0].name << ".size()))\n";
+      out << "), this->col_" << table.columns[0].name << ".size()));\n";
     };
     if(!table.primaryKey.empty()) {
       generateIndexInsert("primary_key_idx", table.primaryKey);
@@ -96,11 +96,12 @@ void Schema::generateCppCode(std::ostream& out) {
     // delete
     out << "  void delete_tuple(size_t tid) {\n";
     auto generateIndexDelete = [&](const std::string& idxName, const std::vector<unsigned>& idxCols){
-      out << "    this->" << idxName << ".erase(std::make_tuple(";
+      out << "    this->" << idxName << ".erase(this->"
+          << idxName << ".find(std::make_tuple(";
       generateList(out, idxCols, [&](auto& out, auto& col){
               out << "this->col_" << table.columns[col].name << "[tid]";
           });
-      out << "));\n";
+      out << ")));\n";
       out << "    this->" << idxName << "[std::make_tuple(";
       generateList(out, idxCols, [&](auto& out, auto& col){
               out << "this->col_" << table.columns[col].name << ".back()";
@@ -147,7 +148,7 @@ void Schema::generateCppCode(std::ostream& out) {
       generateList(out, idxCols, [&](auto& out, auto& col){
               out << "this->col_" << table.columns[col].name << "[i]";
           });
-      out << "), i))\n";
+      out << "), i));\n";
     };
     if(!table.primaryKey.empty()) {
       generateIndexBulkLoad("primary_key_idx", table.primaryKey);
@@ -158,7 +159,7 @@ void Schema::generateCppCode(std::ostream& out) {
     out << "    }\n"
            "  }\n";
     //finish struct
-    out << "}\n";
+    out << "};\n";
   }
   out << "//--------------------------------------------------\n"
          "#endif";
