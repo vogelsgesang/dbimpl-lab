@@ -260,10 +260,10 @@ struct customer_t {
   std::vector<Numeric<12,2>> col_c_ytd_paymenr;
   std::vector<Numeric<4,0>> col_c_payment_cnt;
   std::vector<Numeric<4,0>> col_c_delivery_cnt;
-  std::vector<Varchar<244>> col_c_data;
+  std::vector<Varchar<500>> col_c_data;
   std::unordered_map<std::tuple<Integer, Integer, Integer>, size_t> primary_key_idx;
   std::unordered_map<std::tuple<Integer, Integer, Varchar<16>, Varchar<16>>, size_t> idx_customer_wdl;
-  void insert_tuple(Integer c_id, Integer c_d_id, Integer c_w_id, Varchar<16> c_first, Char<2> c_middle, Varchar<16> c_last, Varchar<20> c_street_1, Varchar<20> c_street_2, Varchar<20> c_city, Char<2> c_state, Char<9> c_zip, Char<16> c_phone, Timestamp c_since, Char<2> c_credit, Numeric<12,2> c_credit_lim, Numeric<4,4> c_discount, Numeric<12,2> c_balance, Numeric<12,2> c_ytd_paymenr, Numeric<4,0> c_payment_cnt, Numeric<4,0> c_delivery_cnt, Varchar<244> c_data) {
+  void insert_tuple(Integer c_id, Integer c_d_id, Integer c_w_id, Varchar<16> c_first, Char<2> c_middle, Varchar<16> c_last, Varchar<20> c_street_1, Varchar<20> c_street_2, Varchar<20> c_city, Char<2> c_state, Char<9> c_zip, Char<16> c_phone, Timestamp c_since, Char<2> c_credit, Numeric<12,2> c_credit_lim, Numeric<4,4> c_discount, Numeric<12,2> c_balance, Numeric<12,2> c_ytd_paymenr, Numeric<4,0> c_payment_cnt, Numeric<4,0> c_delivery_cnt, Varchar<500> c_data) {
     this->col_c_id.push_back(c_id);
     this->col_c_d_id.push_back(c_d_id);
     this->col_c_w_id.push_back(c_w_id);
@@ -443,7 +443,7 @@ struct customer_t {
       buffer.clear();
       nextChar = in.get();
       while(nextChar != '|' && nextChar != '\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }
-      this->col_c_data.push_back(Varchar<244>::castString(buffer.c_str(), buffer.size()));
+      this->col_c_data.push_back(Varchar<500>::castString(buffer.c_str(), buffer.size()));
       if(nextChar != '\n') throw "expected end of line";
     }
     auto table_size = this->col_c_id.size();

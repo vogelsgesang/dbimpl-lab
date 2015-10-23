@@ -10,7 +10,7 @@ enum class DataTypeTag : char { Integer, Numeric, Char, VarChar, Date, Timestamp
 struct DataType {
   DataTypeTag typeTag;
   union {
-    unsigned char charLen;
+    unsigned int charLen;
     struct {
       unsigned char integerPlaces;
       unsigned char decimalPlaces;
