@@ -36,14 +36,21 @@ int main() {
     std::cout << e << std::endl;
     return -1;
   }
-  std::cout << "\ntpcc benchmark" << std::endl;
+  std::cout << std::endl
+            << "order table size " << tables->order.col_o_id.size() << "\n"
+            << "neworder table size " << tables->neworder.col_no_o_id.size() << "\n"
+            << "orderline table size " << tables->orderline.col_ol_o_id.size() << "\n";
+  std::cout << "tpcc benchmark" << std::endl;
   clock_t begin_time = clock();
   auto iterations = 1'000'000;
   for(int i = 0; i < iterations; i++) {
     newOrderRandom(tables.get(), Timestamp(), 1);
     if((i & 0xfff) == 0) std::cout << "." << std::flush;
   }
-  std::cout << std::endl;
+  std::cout << std::endl
+            << "order table size " << tables->order.col_o_id.size() << "\n"
+            << "neworder table size " << tables->neworder.col_no_o_id.size() << "\n"
+            << "orderline table size " << tables->orderline.col_ol_o_id.size() << "\n";
   clock_t end_time = clock();
   double elapsed_secs = double(end_time - begin_time) / CLOCKS_PER_SEC;
   std::cout << (iterations / elapsed_secs) << " transactions per seconds" << std::endl;
