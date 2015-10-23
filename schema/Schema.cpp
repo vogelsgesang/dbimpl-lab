@@ -37,7 +37,7 @@ void Schema::generateCppCode(std::ostream& out) {
     "#include <vector>\n"
     "#include <map>\n"
     "#include <unordered_map>\n"
-    "#include <schema/Types.hpp>\n";
+    "#include \"schema/Types.hpp\"\n";
   for(auto& table : tables) {
     out <<
       "//--------------------------------------------------\n"
@@ -128,4 +128,5 @@ void Schema::generateCppCode(std::ostream& out) {
     //TODO: parse
     out << "}\n";
   }
+  out << "#endif";
 }
