@@ -343,7 +343,7 @@ public:
 
       // Parse
       if (iter==limit)
-         throw "invalid number format: found non-numeric characters";
+         throw "invalid number format: no numeric characters found";
 
       int64_t result=0;
       bool fraction=false;
