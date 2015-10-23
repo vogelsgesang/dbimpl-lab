@@ -31,7 +31,10 @@ struct warehouse_t {
     this->col_w_zip.push_back(w_zip);
     this->col_w_tax.push_back(w_tax);
     this->col_w_ytd.push_back(w_ytd);
-    this->primary_key_idx.insert(std::make_pair(std::make_tuple(w_id), this->col_w_id.size()));
+    {
+      auto insertion_result = this->primary_key_idx.insert(std::make_pair(std::make_tuple(w_id), this->col_w_id.size()));
+      if(!insertion_result.second) throw "duplicate value in index 'primary_key_idx' on table 'warehouse'";
+    }
   }
   void delete_tuple(size_t tid) {
     this->primary_key_idx.erase(this->primary_key_idx.find(std::make_tuple(this->col_w_id[tid])));
@@ -141,7 +144,10 @@ struct district_t {
     this->col_d_tax.push_back(d_tax);
     this->col_d_ytd.push_back(d_ytd);
     this->col_d_next_o_id.push_back(d_next_o_id);
-    this->primary_key_idx.insert(std::make_pair(std::make_tuple(d_w_id, d_id), this->col_d_id.size()));
+    {
+      auto insertion_result = this->primary_key_idx.insert(std::make_pair(std::make_tuple(d_w_id, d_id), this->col_d_id.size()));
+      if(!insertion_result.second) throw "duplicate value in index 'primary_key_idx' on table 'district'";
+    }
   }
   void delete_tuple(size_t tid) {
     this->primary_key_idx.erase(this->primary_key_idx.find(std::make_tuple(this->col_d_w_id[tid], this->col_d_id[tid])));
@@ -286,8 +292,13 @@ struct customer_t {
     this->col_c_payment_cnt.push_back(c_payment_cnt);
     this->col_c_delivery_cnt.push_back(c_delivery_cnt);
     this->col_c_data.push_back(c_data);
-    this->primary_key_idx.insert(std::make_pair(std::make_tuple(c_w_id, c_d_id, c_id), this->col_c_id.size()));
-    this->idx_customer_wdl.insert(std::make_pair(std::make_tuple(c_w_id, c_d_id, c_last, c_first), this->col_c_id.size()));
+    {
+      auto insertion_result = this->primary_key_idx.insert(std::make_pair(std::make_tuple(c_w_id, c_d_id, c_id), this->col_c_id.size()));
+      if(!insertion_result.second) throw "duplicate value in index 'primary_key_idx' on table 'customer'";
+    }
+    {
+      this->idx_customer_wdl.insert(std::make_pair(std::make_tuple(c_w_id, c_d_id, c_last, c_first), this->col_c_id.size()));
+    }
   }
   void delete_tuple(size_t tid) {
     this->primary_key_idx.erase(this->primary_key_idx.find(std::make_tuple(this->col_c_w_id[tid], this->col_c_d_id[tid], this->col_c_id[tid])));
@@ -568,7 +579,10 @@ struct neworder_t {
     this->col_no_o_id.push_back(no_o_id);
     this->col_no_d_id.push_back(no_d_id);
     this->col_no_w_id.push_back(no_w_id);
-    this->primary_key_idx.insert(std::make_pair(std::make_tuple(no_w_id, no_d_id, no_o_id), this->col_no_o_id.size()));
+    {
+      auto insertion_result = this->primary_key_idx.insert(std::make_pair(std::make_tuple(no_w_id, no_d_id, no_o_id), this->col_no_o_id.size()));
+      if(!insertion_result.second) throw "duplicate value in index 'primary_key_idx' on table 'neworder'";
+    }
   }
   void delete_tuple(size_t tid) {
     this->primary_key_idx.erase(this->primary_key_idx.find(std::make_tuple(this->col_no_w_id[tid], this->col_no_d_id[tid], this->col_no_o_id[tid])));
@@ -631,8 +645,13 @@ struct order_t {
     this->col_o_carrier_id.push_back(o_carrier_id);
     this->col_o_ol_cnt.push_back(o_ol_cnt);
     this->col_o_all_local.push_back(o_all_local);
-    this->primary_key_idx.insert(std::make_pair(std::make_tuple(o_w_id, o_d_id, o_id), this->col_o_id.size()));
-    this->idx_order_wdc.insert(std::make_pair(std::make_tuple(o_w_id, o_d_id, o_c_id, o_id), this->col_o_id.size()));
+    {
+      auto insertion_result = this->primary_key_idx.insert(std::make_pair(std::make_tuple(o_w_id, o_d_id, o_id), this->col_o_id.size()));
+      if(!insertion_result.second) throw "duplicate value in index 'primary_key_idx' on table 'order'";
+    }
+    {
+      this->idx_order_wdc.insert(std::make_pair(std::make_tuple(o_w_id, o_d_id, o_c_id, o_id), this->col_o_id.size()));
+    }
   }
   void delete_tuple(size_t tid) {
     this->primary_key_idx.erase(this->primary_key_idx.find(std::make_tuple(this->col_o_w_id[tid], this->col_o_d_id[tid], this->col_o_id[tid])));
@@ -745,7 +764,10 @@ struct orderline_t {
     this->col_ol_quantity.push_back(ol_quantity);
     this->col_ol_amount.push_back(ol_amount);
     this->col_ol_dist_info.push_back(ol_dist_info);
-    this->primary_key_idx.insert(std::make_pair(std::make_tuple(ol_w_id, ol_d_id, ol_o_id, ol_number), this->col_ol_o_id.size()));
+    {
+      auto insertion_result = this->primary_key_idx.insert(std::make_pair(std::make_tuple(ol_w_id, ol_d_id, ol_o_id, ol_number), this->col_ol_o_id.size()));
+      if(!insertion_result.second) throw "duplicate value in index 'primary_key_idx' on table 'orderline'";
+    }
   }
   void delete_tuple(size_t tid) {
     this->primary_key_idx.erase(this->primary_key_idx.find(std::make_tuple(this->col_ol_w_id[tid], this->col_ol_d_id[tid], this->col_ol_o_id[tid], this->col_ol_number[tid])));
@@ -850,7 +872,10 @@ struct item_t {
     this->col_i_name.push_back(i_name);
     this->col_i_price.push_back(i_price);
     this->col_i_data.push_back(i_data);
-    this->primary_key_idx.insert(std::make_pair(std::make_tuple(i_id), this->col_i_id.size()));
+    {
+      auto insertion_result = this->primary_key_idx.insert(std::make_pair(std::make_tuple(i_id), this->col_i_id.size()));
+      if(!insertion_result.second) throw "duplicate value in index 'primary_key_idx' on table 'item'";
+    }
   }
   void delete_tuple(size_t tid) {
     this->primary_key_idx.erase(this->primary_key_idx.find(std::make_tuple(this->col_i_id[tid])));
@@ -944,7 +969,10 @@ struct stock_t {
     this->col_s_order_cnt.push_back(s_order_cnt);
     this->col_s_remote_cnt.push_back(s_remote_cnt);
     this->col_s_data.push_back(s_data);
-    this->primary_key_idx.insert(std::make_pair(std::make_tuple(s_w_id, s_i_id), this->col_s_i_id.size()));
+    {
+      auto insertion_result = this->primary_key_idx.insert(std::make_pair(std::make_tuple(s_w_id, s_i_id), this->col_s_i_id.size()));
+      if(!insertion_result.second) throw "duplicate value in index 'primary_key_idx' on table 'stock'";
+    }
   }
   void delete_tuple(size_t tid) {
     this->primary_key_idx.erase(this->primary_key_idx.find(std::make_tuple(this->col_s_w_id[tid], this->col_s_i_id[tid])));

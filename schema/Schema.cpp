@@ -50,12 +50,21 @@ static void generateIndexMember(std::ostream& out, const TableDescription& table
 }
 
 static void generateIndexInsert(std::ostream& out, const TableDescription& table,
-                                const std::string& idxName, const std::vector<unsigned>& idxCols){
-  out << "    this->" << idxName << ".insert(std::make_pair(std::make_tuple(";
+                                const std::string& idxName, const std::vector<unsigned>& idxCols,
+                                bool unique){
+  out << "    {\n"
+         "      ";
+  if(unique) out << "auto insertion_result = ";
+  out << "this->" << idxName << ".insert(std::make_pair(std::make_tuple(";
   generateList(out, idxCols, [&](auto& out, auto& col){
           out << table.columns[col].name;
       });
   out << "), this->col_" << table.columns[0].name << ".size()));\n";
+  if(unique) {
+    out << "      if(!insertion_result.second) throw \"duplicate value in index '"
+        << idxName << "' on table '" << table.name <<"'\";\n";
+  }
+  out << "    }\n";
 }
 
 static void generateUniqueIndexDelete(std::ostream& out, const TableDescription& table,
@@ -133,10 +142,10 @@ void Schema::generateCppCode(std::ostream& out) {
       out << "    this->col_" << column.name << ".push_back(" << column.name << ");\n";
     }
     if(!table.primaryKey.empty()) {
-      generateIndexInsert(out, table, "primary_key_idx", table.primaryKey);
+      generateIndexInsert(out, table, "primary_key_idx", table.primaryKey, true);
     }
     for(auto& idx : table.indices) {
-      generateIndexInsert(out, table, "idx_" + idx.name, idx.columns);
+      generateIndexInsert(out, table, "idx_" + idx.name, idx.columns, false);
     }
     out << "  }\n";
     // delete
