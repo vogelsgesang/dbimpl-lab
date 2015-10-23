@@ -108,6 +108,6 @@ build/deps/$(BUILD_TYPE)/%.h.d: %.h
 	$(CXX) $(CPPFLAGS) $(CXXFLAGS) -MF $@ -MM -MP -MT $@ -MT $(OBJ_DIR)/$(basename $<).o $<
 
 #include these make rules
-DEPFILES=$(patsubst %, build/deps/$(BUILD_TYPE)/%.d, $(filter-out unused/%, $(filter-out lib/%, $(wildcard **/*.cpp **/*.h))))
+DEPFILES=$(patsubst %, build/deps/$(BUILD_TYPE)/%.d, $(filter-out unused/%, $(filter-out lib/%, $(wildcard *.cpp *.hpp *.h **/*.cpp **/*.hpp **/*.h))))
 
 -include $(DEPFILES)
