@@ -94,10 +94,6 @@ void Schema::generateCppCode(std::ostream& out) {
     out << "  }\n";
     // delete
     out << "  void delete_tuple(size_t tid) {\n";
-    for(auto& column : table.columns) {
-      out << "    this->col_" << column.name << "[tid] = this->col_" << column.name << ".back();\n";
-      out << "    this->col_" << column.name << ".pop_back();\n";
-    }
     auto generateIndexDelete = [&](const std::string& idxName, const std::vector<unsigned>& idxCols){
       out << "    this->" << idxName << ".erase(std::make_tuple(";
       generateList(out, idxCols, [&](auto& out, auto& col){
@@ -115,6 +111,10 @@ void Schema::generateCppCode(std::ostream& out) {
     }
     for(auto& idx : table.indices) {
       generateIndexDelete("idx_" + idx.name, idx.columns);
+    }
+    for(auto& column : table.columns) {
+      out << "    this->col_" << column.name << "[tid] = this->col_" << column.name << ".back();\n";
+      out << "    this->col_" << column.name << ".pop_back();\n";
     }
     out << "  }\n";
     //TODO: parse
