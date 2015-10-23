@@ -37,6 +37,7 @@ void Schema::generateCppCode(std::ostream& out) {
     "#include <vector>\n"
     "#include <map>\n"
     "#include <unordered_map>\n"
+    "#include <istream>\n"
     "#include \"schema/Types.hpp\"\n";
   for(auto& table : tables) {
     out << "//--------------------------------------------------\n"
@@ -117,7 +118,46 @@ void Schema::generateCppCode(std::ostream& out) {
       out << "    this->col_" << column.name << ".pop_back();\n";
     }
     out << "  }\n";
-    //TODO: parse
+    // loadFromTbl
+    out << "  void loadFromTbl(std::istream& in) {\n"
+        << "    std::string buffer;\n"
+        << "    char nextChar;\n"
+        << "    while(in.good()) {\n";
+    bool first = true;
+    for(auto& col : table.columns) {
+      if(!first) out << "      if(nextChar == '\\n') throw \"unexpected end of line\";\n";
+      first = false;
+      out << "      buffer.clear();\n"
+             "      nextChar = in.peek();\n"
+             "      while(nextChar != '|' && nextChar != '\\n') { buffer.push_back(nextChar); nextChar = in.get(); }\n"
+             "      this->col_" << col.name << ".push_back(" << translateType(col.type) << "::castString(buffer.c_str(), buffer.size()));\n";
+    }
+    out << "      if(nextChar != '\\n') throw \"expected end of line\";\n";
+    out << "    }\n"
+           "    auto table_size = this->col_" << table.columns[0].name << ".size();\n";
+    if(!table.primaryKey.empty()) {
+      out << "    this->primary_key_idx.reserve(table_size);\n";
+    }
+    for(auto& idx : table.indices) {
+      out << "    this->idx_" << idx.name << ".reserve(table_size);\n";
+    }
+    out << "    for(size_t i = 0; i < table_size; i++) {\n";
+    auto generateIndexBulkLoad = [&](const std::string& idxName, const std::vector<unsigned>& idxCols){
+      out << "      this->" << idxName << ".insert(std::make_pair(std::make_tuple(";
+      generateList(out, idxCols, [&](auto& out, auto& col){
+              out << "this->col_" << table.columns[col].name << "[i]";
+          });
+      out << "), i))\n";
+    };
+    if(!table.primaryKey.empty()) {
+      generateIndexBulkLoad("primary_key_idx", table.primaryKey);
+    }
+    for(auto& idx : table.indices) {
+      generateIndexBulkLoad("idx_" + idx.name, idx.columns);
+    }
+    out << "    }\n"
+           "  }\n";
+    //finish struct
     out << "}\n";
   }
   out << "//--------------------------------------------------\n"
