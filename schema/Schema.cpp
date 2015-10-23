@@ -59,7 +59,7 @@ static void generateIndexInsert(std::ostream& out, const TableDescription& table
   generateList(out, idxCols, [&](auto& out, auto& col){
           out << table.columns[col].name;
       });
-  out << "), this->col_" << table.columns[0].name << ".size()));\n";
+  out << "), this->col_" << table.columns[0].name << ".size()-1));\n";
   if(unique) {
     out << "      if(!insertion_result.second) throw \"duplicate value in index '"
         << idxName << "' on table '" << table.name <<"'\";\n";
@@ -69,22 +69,34 @@ static void generateIndexInsert(std::ostream& out, const TableDescription& table
 
 static void generateUniqueIndexDelete(std::ostream& out, const TableDescription& table,
                                       const std::string& idxName, const std::vector<unsigned>& idxCols){
+  // first update, then delete. This order is important if we try to
+  // delete the element at the back of the vectors.
+  out << "    this->" << idxName << "[std::make_tuple(";
+  generateList(out, idxCols, [&](auto& out, auto& col){
+          out << "this->col_" << table.columns[col].name << ".back()";
+      });
+  out << ")] = tid;\n";
   out << "    this->" << idxName << ".erase(this->"
       << idxName << ".find(std::make_tuple(";
   generateList(out, idxCols, [&](auto& out, auto& col){
           out << "this->col_" << table.columns[col].name << "[tid]";
       });
   out << ")));\n";
-  out << "    this->" << idxName << "[std::make_tuple(";
-  generateList(out, idxCols, [&](auto& out, auto& col){
-          out << "this->col_" << table.columns[col].name << ".back()";
-      });
-  out << ")] = tid;\n";
 }
 
 auto generateIndexDelete(std::ostream& out, const TableDescription& table,
                          const std::string& idxName, const std::vector<unsigned>& idxCols){
-  out << "    {\n";
+  // first update, then delete. This order is important if we try to
+  // delete the element at the back of the vectors.
+  out << "    {\n"
+         "      auto replacement_range = this->" << idxName << ".equal_range(std::make_tuple(";
+  generateList(out, idxCols, [&](auto& out, auto& col){
+          out << "this->col_" << table.columns[col].name << ".back()";
+      });
+  out << "));\n";
+  out << "      auto replacement_tid = this->col_" << table.columns[0].name << ".size();\n"
+         "      (std::find_if(replacement_range.first, replacement_range.second,\n"
+         "          [replacement_tid](auto& e){return e.second == replacement_tid;}))->second = tid;\n";
   out << "      auto deleted_range = this->" << idxName << ".equal_range(std::make_tuple(";
   generateList(out, idxCols, [&](auto& out, auto& col){
           out << "this->col_" << table.columns[col].name << "[tid]";
@@ -93,14 +105,6 @@ auto generateIndexDelete(std::ostream& out, const TableDescription& table,
          "      this->" << idxName << ".erase(std::find_if(\n"
          "         deleted_range.first, deleted_range.second,\n"
          "         [tid](auto& e){return e.second == tid;}));\n"
-         "      auto replacement_range = this->" << idxName << ".equal_range(std::make_tuple(";
-  generateList(out, idxCols, [&](auto& out, auto& col){
-          out << "this->col_" << table.columns[col].name << ".back()";
-      });
-  out << "));\n";
-  out << "      auto replacement_tid = this->col_" << table.columns[0].name << ".size();\n"
-         "      (std::find_if(replacement_range.first, replacement_range.second,\n"
-         "          [replacement_tid](auto& e){return e.second == replacement_tid;}))->second = tid;\n"
          "    }\n";
 }
 
