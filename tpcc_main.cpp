@@ -30,7 +30,7 @@ int main() {
   clock_t begin_time = clock();
   auto iterations = 1'000'000;
   for(int i = 0; i < iterations; i++) {
-    newOrderRandom(Timestamp(), 1);
+    newOrderRandom(tables.get(), Timestamp(), 1);
   }
   clock_t end_time = clock();
   double elapsed_secs = double(end_time - begin_time) / CLOCKS_PER_SEC;
