@@ -178,11 +178,12 @@ void Schema::generateCppCode(std::ostream& out) {
     out << "      if(nextChar != '\\n') throw \"expected end of line\";\n";
     out << "    }\n"
            "    auto table_size = this->col_" << table.columns[0].name << ".size();\n";
-    if(!table.primaryKey.empty()) {
+    if(!table.primaryKey.empty() && !table.primaryKeyPrefixIndexable) {
       out << "    this->primary_key_idx.reserve(table_size);\n";
     }
     for(auto& idx : table.indices) {
-      out << "    this->idx_" << idx.name << ".reserve(table_size);\n";
+      if(!idx.prefixIndexable)
+        out << "    this->idx_" << idx.name << ".reserve(table_size);\n";
     }
     out << "    for(size_t i = 0; i < table_size; i++) {\n";
     auto generateIndexBulkLoad = [&](const std::string& idxName, const std::vector<unsigned>& idxCols){
