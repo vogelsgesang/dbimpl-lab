@@ -11,9 +11,9 @@ using namespace std;
 
 int main() {
   auto tables = std::make_unique<table_data>();
-  //load all the tables from disk
-  std::cout << "loading data tables" << std::endl;
   try {
+    //load all the tables from disk
+    std::cout << "loading data tables" << std::endl;
     auto data_folder = std::string{"data/"};
     tables->warehouse.loadFromTbl(std::ifstream((data_folder + "tpcc_warehouse.tbl").c_str()));
     std::cout << "." << std::flush;
@@ -35,9 +35,11 @@ int main() {
     std::cout << "." << std::flush;
 
     std::cout << std::endl
-              << "order table size " << tables->order.col_o_id.size() << "\n"
-              << "neworder table size " << tables->neworder.col_no_o_id.size() << "\n"
-              << "orderline table size " << tables->orderline.col_ol_o_id.size() << "\n";
+              << "order table size: " << tables->order.col_o_id.size() << "\n"
+              << "neworder table size: " << tables->neworder.col_no_o_id.size() << "\n"
+              << "orderline table size: " << tables->orderline.col_ol_o_id.size() << "\n";
+
+    // execute the tpcc benchmark
     std::cout << "tpcc benchmark" << std::endl;
     clock_t begin_time = clock();
     auto iterations = 1'000'000;
@@ -52,9 +54,9 @@ int main() {
       #endif
     }
     std::cout << std::endl
-              << "order table size " << tables->order.col_o_id.size() << "\n"
-              << "neworder table size " << tables->neworder.col_no_o_id.size() << "\n"
-              << "orderline table size " << tables->orderline.col_ol_o_id.size() << "\n";
+              << "order table size: " << tables->order.col_o_id.size() << "\n"
+              << "neworder table size: " << tables->neworder.col_no_o_id.size() << "\n"
+              << "orderline table size: " << tables->orderline.col_ol_o_id.size() << "\n";
     clock_t end_time = clock();
     double elapsed_secs = double(end_time - begin_time) / CLOCKS_PER_SEC;
     std::cout << (iterations / elapsed_secs) << " transactions per seconds" << std::endl;
