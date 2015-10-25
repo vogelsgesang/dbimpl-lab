@@ -32,7 +32,7 @@ endif
 OBJ_DIR=build/$(BUILD_TYPE)
 
 .PHONY: all
-all: $(addsuffix $(BIN_SUFFIX), bin/runTests bin/tpcc bin/generate_schema)
+all: $(addsuffix $(BIN_SUFFIX), bin/runTests bin/tpcc bin/olap bin/generate_schema)
 
 .PHONY: test
 test: all
@@ -57,6 +57,12 @@ TPCC_OBJS=tpcc_main.o schema/Types.o schema/Parser.o queries/neworderrandom.o qu
 bin/tpcc$(BIN_SUFFIX): $(addprefix $(OBJ_DIR)/, $(TPCC_OBJS))
 	@mkdir -p $(dir $@)
 	$(CXX) $(LDFLAGS) $(filter-out tests, $^) $(LDLIBS) -o $@
+
+OLAP_OBJS=olap.o schema/Types.o schema/Parser.o queries/bsum.o
+bin/olap$(BIN_SUFFIX): $(addprefix $(OBJ_DIR)/, $(OLAP_OBJS))
+	@mkdir -p $(dir $@)
+	$(CXX) $(LDFLAGS) $(filter-out tests, $^) $(LDLIBS) -o $@
+
 
 RUNTESTS_OBJS=gtest_main.a $(patsubst %.cpp, %.o, $(shell find tests/ -iname *Test.cpp -type f)) \
 							schema/Types.o schema/Parser.o
