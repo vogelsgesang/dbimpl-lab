@@ -32,6 +32,7 @@ int main() {
     std::cout << "." << std::flush;
     tables->stock.loadFromTbl(std::ifstream((data_folder + "tpcc_stock.tbl").c_str()));
     std::cout << "." << std::flush;
+    std::cout << std::endl;
 
     // execute the query
     query(tables.get());

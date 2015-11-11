@@ -1,4 +1,5 @@
 #include "PrintOperator.hpp"
+#include "utils/generateList.hpp"
 
 void PrintOperator::produce(std::ostream& out, IUSet& requiredIUs) {
   auto requiredIUsCopy = requiredIUs;
@@ -10,9 +11,9 @@ void PrintOperator::produce(std::ostream& out, IUSet& requiredIUs) {
 
 void PrintOperator::consume(std::ostream& out, const QueryOperator&) {
   out << "std::cout ";
-  for(const auto& col : printedColumns) {
+  generateList(out, printedColumns, [](auto& out, auto& col) {
     out << " << " << col->getVarname();
-  }
+  }, " << \"\\t|\\t\"");
   out << "<< std::endl;";
   if(parent) parent->consume(out, *this);
 }
