@@ -72,6 +72,13 @@ int main() {
     std::move(joinedColumns)
   );
 
+  std::ostream& out = std::cout;
+  out << "#include <unordered_map>\n"
+         "#include <iostream>\n"
+         "#include \"schema/Types.hpp\"\n"
+         "#include \"schema/GeneratedSchema.hpp\"\n"
+         "void query(table_data* tables) {";
   auto noRequiredCols = IUSet{};
-  queryTree->produce(std::cout, noRequiredCols);
+  queryTree->produce(out, noRequiredCols);
+  out << "}";
 }
