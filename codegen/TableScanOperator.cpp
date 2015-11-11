@@ -3,10 +3,10 @@
 
 void TableScanOperator::produce(std::ostream& out, IUSet& requiredIUs) {
   out << "for(size_t tid = 0; tid < tables->" << tableDesc.name
-      << "." << iuColumnNames.at(*requiredIUs.begin()) << ".size(); tid++) {";
+      << ".col_" << iuColumnNames.at(*requiredIUs.begin()) << ".size(); tid++) {";
   for(const auto& iu : requiredIUs) {
     out << "auto& " << iu->getVarname() << " = tables->" << tableDesc.name
-        << "." << iuColumnNames.at(iu) << "[tid];";
+        << ".col_" << iuColumnNames.at(iu) << "[tid];";
   }
   parent->consume(out, *this);
   out << "}";
