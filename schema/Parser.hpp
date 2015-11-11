@@ -29,6 +29,7 @@ class Parser {
     std::string fileName;
     std::istream* in;
     std::unique_ptr<Schema> parseSqlSchema(std::istream& in);
+    std::unique_ptr<Schema> parseSqlSchema(std::istream&& in) { return parseSqlSchema(in); }
 
   private:
     int lineno;

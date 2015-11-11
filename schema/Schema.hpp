@@ -16,6 +16,8 @@ struct DataType {
       unsigned char decimalPlaces;
     } numeric;
   } attributes;
+
+  std::string generateCppCode() const;
 };
 
 struct ColumnDescription {
@@ -39,11 +41,14 @@ struct TableDescription {
   bool primaryKeyPrefixIndexable = false;
   std::vector<IndexDescription> indices;
   TableDescription(const std::string& name) : name(name) {}
+  const ColumnDescription& getColumnByName(const std::string& name) const;
 };
 
 struct Schema {
   std::vector<TableDescription> tables;
   std::vector<IndexDescription> indices;
+
+  const TableDescription& getTableByName(const std::string& name) const;
   void generateCppCode(std::ostream& out);
 };
 

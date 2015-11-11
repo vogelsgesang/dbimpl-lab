@@ -1,35 +1,44 @@
 #include "Schema.hpp"
 #include <sstream>
+#include <algorithm>
+#include <stdexcept>
+#include "utils/generateList.hpp"
 
-static std::string translateType(const DataType& type) {
+std::string DataType::generateCppCode() const {
   std::ostringstream stream;
-  if(type.typeTag == DataTypeTag::Integer) {
+  if(this->typeTag == DataTypeTag::Integer) {
     stream << "Integer";
-  } else if(type.typeTag == DataTypeTag::Numeric) {
-    stream << "Numeric<" << (int) type.attributes.numeric.integerPlaces
-           << "," << (int) type.attributes.numeric.decimalPlaces << ">";
-  } else if(type.typeTag == DataTypeTag::Char) {
-    stream << "Char<" << (int) type.attributes.charLen << ">";
-  } else if(type.typeTag == DataTypeTag::VarChar) {
-    stream << "Varchar<" << (int) type.attributes.charLen << ">";
-  } else if(type.typeTag == DataTypeTag::Date) {
+  } else if(this->typeTag == DataTypeTag::Numeric) {
+    stream << "Numeric<" << (int) this->attributes.numeric.integerPlaces
+           << "," << (int) this->attributes.numeric.decimalPlaces << ">";
+  } else if(this->typeTag == DataTypeTag::Char) {
+    stream << "Char<" << (int) this->attributes.charLen << ">";
+  } else if(this->typeTag == DataTypeTag::VarChar) {
+    stream << "Varchar<" << (int) this->attributes.charLen << ">";
+  } else if(this->typeTag == DataTypeTag::Date) {
     stream << "Date";
-  } else if(type.typeTag == DataTypeTag::Timestamp) {
+  } else if(this->typeTag == DataTypeTag::Timestamp) {
     stream << "Timestamp";
   }
   return stream.str();
 }
 
-template<typename T, typename Callable>
-static void generateList(std::ostream& out, const std::vector<T>& elements,
-                         Callable cb, std::string seperator = ", ") {
-  auto first = true;
-  for(const auto& elem : elements) {
-    if(!first) out << seperator;
-    cb(out, elem);
-    first = false;
-  }
+
+const ColumnDescription& TableDescription::getColumnByName(const std::string& name) const {
+  auto iter = std::find_if(columns.begin(), columns.end(),
+                           [&name](auto& c) {return c.name == name;});
+  if(iter == columns.end()) throw std::out_of_range("TableDescription::getColumnByName");
+  return *iter;
 }
+
+
+const TableDescription& Schema::getTableByName(const std::string& name) const {
+  auto iter = std::find_if(tables.begin(), tables.end(),
+                           [&name](auto& c) {return c.name == name;});
+  if(iter == tables.end()) throw std::out_of_range("Schema::getTableByName");
+  return *iter;
+}
+
 
 static void generateIndexMember(std::ostream& out, const TableDescription& table,
                                 const std::string& idxName, const std::vector<unsigned>& idxCols,
@@ -44,7 +53,7 @@ static void generateIndexMember(std::ostream& out, const TableDescription& table
   }
   out << "<std::tuple<";
   generateList(out, idxCols, [&](auto& out, auto& col){
-           out << translateType(table.columns[col].type);
+           out << table.columns[col].type.generateCppCode();
       });
   out << ">, size_t> " << idxName << ";\n";
 }
@@ -126,7 +135,7 @@ void Schema::generateCppCode(std::ostream& out) {
            "struct " << table.name << "_t {\n";
     // actual columns
     for(auto& column : table.columns) {
-      out << "  std::vector<" << translateType(column.type) << "> col_" << column.name << ";\n";
+      out << "  std::vector<" << column.type.generateCppCode() << "> col_" << column.name << ";\n";
     }
     // primary key index
     if(!table.primaryKey.empty()) {
@@ -139,7 +148,7 @@ void Schema::generateCppCode(std::ostream& out) {
     // insert
     out << "  void insert_tuple(";
     generateList(out, table.columns, [&](auto& out, auto& column){
-            out << translateType(column.type) << " " << column.name;
+            out << column.type.generateCppCode() << " " << column.name;
         });
     out << ") {\n";
     for(auto& column : table.columns) {
@@ -177,7 +186,7 @@ void Schema::generateCppCode(std::ostream& out) {
       out << "      buffer.clear();\n"
              "      nextChar = in.get();\n"
              "      while(nextChar != '|' && nextChar != '\\n' && nextChar != std::char_traits<char>::eof()) { buffer.push_back(nextChar); nextChar = in.get(); }\n"
-             "      this->col_" << col.name << ".push_back(" << translateType(col.type) << "::castString(buffer.c_str(), buffer.size()));\n";
+             "      this->col_" << col.name << ".push_back(" << col.type.generateCppCode() << "::castString(buffer.c_str(), buffer.size()));\n";
     }
     out << "      if(nextChar != '\\n') throw \"expected end of line\";\n";
     out << "    }\n"
