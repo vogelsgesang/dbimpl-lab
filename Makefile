@@ -32,7 +32,7 @@ endif
 OBJ_DIR=build/$(BUILD_TYPE)
 
 .PHONY: all
-all: $(addsuffix $(BIN_SUFFIX), bin/runTests bin/tpcc bin/olap bin/tpcc_olap bin/generate_schema bin/generate_query)
+all: $(addsuffix $(BIN_SUFFIX), bin/runTests bin/tpcc bin/olap bin/tpcc_olap bin/generate_schema bin/generate_query bin/execute_query)
 
 .PHONY: test
 test: all
@@ -71,6 +71,11 @@ bin/tpcc_olap$(BIN_SUFFIX): $(addprefix $(OBJ_DIR)/, $(TPCC_OLAP_OBJS))
 GENERATE_QUERY_OBJS=generate_query.o schema/Types.o schema/Schema.o schema/Parser.o codegen/PrintOperator.o codegen/TableScanOperator.o \
 									codegen/SelectionOperator.o codegen/InnerHashJoinOperator.o
 bin/generate_query$(BIN_SUFFIX): $(addprefix $(OBJ_DIR)/, $(GENERATE_QUERY_OBJS))
+	@mkdir -p $(dir $@)
+	$(CXX) $(LDFLAGS) $(filter-out tests, $^) $(LDLIBS) -o $@
+
+EXECUTE_QUERY_OBJS=execute_query.o schema/Types.o
+bin/execute_query$(BIN_SUFFIX): $(addprefix $(OBJ_DIR)/, $(EXECUTE_QUERY_OBJS))
 	@mkdir -p $(dir $@)
 	$(CXX) $(LDFLAGS) $(filter-out tests, $^) $(LDLIBS) -o $@
 
