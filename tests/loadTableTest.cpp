@@ -18,8 +18,8 @@ TEST(ParseTblTest, parsesATable) {
     EXPECT_EQ(Integer(1), get<0>(table)[0]);
     EXPECT_EQ(Integer(2), get<0>(table)[1]);
     typedef Numeric<1,1> Numeric_1_1;
-    EXPECT_EQ(Numeric_1_1(12), get<1>(table)[0]);
-    EXPECT_EQ(Numeric_1_1(24), get<1>(table)[1]);
+    EXPECT_EQ(Numeric_1_1::buildRaw(12), get<1>(table)[0]);
+    EXPECT_EQ(Numeric_1_1::buildRaw(24), get<1>(table)[1]);
     auto test_string = Varchar<8>{4,"test"};
     EXPECT_EQ(test_string, get<2>(table)[0]);
   } catch(const char* e) {
