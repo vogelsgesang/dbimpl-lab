@@ -1,7 +1,7 @@
 #include <gtest/gtest.h>
 #include <sstream>
 
-#include "schema/Parser.hpp"
+#include "sql/Parser.hpp"
 
 TEST(SchemaParserTest, parsesAnEmptySchemaDefinitions) {
   auto parser = Parser{};

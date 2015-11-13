@@ -7,7 +7,8 @@
 #include <istream>
 #include <sstream>
 #include <experimental/optional>
-#include "Schema.hpp"
+#include "schema/Schema.hpp"
+#include "QueryAst.hpp"
 
 class ParserError : std::exception {
   public:
@@ -26,12 +27,13 @@ class ParserError : std::exception {
 
 class Parser {
   public:
-    std::string fileName;
-    std::istream* in;
     std::unique_ptr<Schema> parseSqlSchema(std::istream& in);
     std::unique_ptr<Schema> parseSqlSchema(std::istream&& in) { return parseSqlSchema(in); }
+    std::unique_ptr<ast::Query> parseQuery(std::istream& in);
+    std::unique_ptr<ast::Query> parseQuery(std::istream&& in) { return parseQuery(in); }
 
   private:
+    std::istream* in;
     int lineno;
 
     void skipWhitespace();
@@ -47,6 +49,7 @@ class Parser {
     void parseTableDescriptionStatement(TableDescription* currentTable);
     void parseTableDescription(TableDescription* table);
     void parseIndexDescription(Schema* schema, bool prefixIndexable = false);
+    void parseWhereConditions(ast::Query* queryAst);
 };
 
 #endif

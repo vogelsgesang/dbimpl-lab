@@ -1,5 +1,6 @@
-#include "Parser.hpp"
+#include "sql/Parser.hpp"
 #include <algorithm>
+#include <utility>
 using namespace std;
 using namespace std::experimental;
 //-------------------------------------------------------------------
@@ -26,8 +27,11 @@ optional<string> Parser::getNextToken() {
   } else {
     token.push_back(firstChar);
     if(seperators.find(firstChar) == string::npos) {
-      while(in->good() && seperators.find(in->peek()) == string::npos) {
-        token.push_back(in->get());
+      auto nextChar = in->peek();
+      while(nextChar != EOF && seperators.find(nextChar) == string::npos) {
+        token.push_back(nextChar);
+        in->ignore();
+        nextChar = in->peek();
       }
     }
     std::transform(token.begin(), token.end(), token.begin(), ::tolower);
@@ -197,7 +201,7 @@ unique_ptr<Schema> Parser::parseSqlSchema(istream& inStream) {
       if(secondToken == "table") {
         schema->tables.emplace_back(parseIdentifier());
         parseTableDescription(&schema->tables.back());
-      } else if(secondToken == "index") { //TODO: parse "__prefix__"
+      } else if(secondToken == "index") {
         parseIndexDescription(schema.get());
       } else if(secondToken == "__prefix__") {
         expectToken("index");
@@ -211,4 +215,67 @@ unique_ptr<Schema> Parser::parseSqlSchema(istream& inStream) {
     expectToken(";");
   }
   return schema;
+}
+//-------------------------------------------------------------------
+void Parser::parseWhereConditions(ast::Query* queryAst) {
+  std::string lastToken;
+  do {
+    auto firstAttrName = expectToken();
+    if(!isIdentifier(firstAttrName)) {
+      throw ParserError(lineno, string{"Expected an identifier; found: \""} + firstAttrName + "\"");
+    }
+    expectToken("=");
+    auto rhs = expectToken();
+    if(isIdentifier(rhs)) {
+      queryAst->joinPredicates.push_back(make_pair(firstAttrName, rhs));
+    } else if(rhs.find_first_not_of("0123456789") == string::npos){
+      queryAst->filterPredicates.push_back(make_pair(firstAttrName, static_cast<uint64_t>(std::stoll(rhs))));
+    } else {
+      throw ParserError(lineno, string{"Expected an identifier or a number; found: \""} + firstAttrName + "\"");
+      //TODO: try to parse it as string or number
+    }
+    lastToken = expectToken();
+  } while(lastToken == "and");
+  if(lastToken != ";") {
+    throw ParserError(lineno, string{"Expected \";\" or \"where\"; found \""} + lastToken + "\"");
+  }
+}
+//-------------------------------------------------------------------
+unique_ptr<ast::Query> Parser::parseQuery(std::istream& inStream) {
+  this->in = &inStream;
+  lineno = 1;
+  auto queryAst = make_unique<ast::Query>();
+  expectToken("select");
+  // parse the list of columns
+  std::string token;
+  do {
+    token = expectToken();
+    if(!isIdentifier(token)) {
+      throw ParserError(lineno, string{"Expected an identifier; found: \""} + token + "\"");
+    }
+    queryAst->selectedColumns.push_back(token);
+    token = expectToken();
+  } while(token == ",");
+  //parse the list of tables
+  if(token != "from") {
+    throw ParserError(lineno, string{"Expected token \"from\"; found: \""} + token + "\"");
+  }
+  do {
+    token = expectToken();
+    if(!isIdentifier(token)) {
+      throw ParserError(lineno, string{"Expected an identifier; found: \""} + token + "\"");
+    }
+    queryAst->tables.push_back(token);
+    token = expectToken();
+  } while(token == ",");
+  if(token == "where") {
+    parseWhereConditions(queryAst.get());
+  } else if(token != ";") {
+    throw ParserError(lineno, string{"Expected \";\" or \"where\"; found \""} + token + "\"");
+  }
+  auto lastToken = getNextToken();
+  if(lastToken) {
+    throw ParserError(lineno, string{"Expected end of statement; found \""} + *lastToken + "\"");
+  }
+  return queryAst;
 }

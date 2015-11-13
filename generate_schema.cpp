@@ -1,6 +1,6 @@
 #include <iostream>
 #include "schema/Schema.hpp"
-#include "schema/Parser.hpp"
+#include "sql/Parser.hpp"
 
 using namespace std;
 

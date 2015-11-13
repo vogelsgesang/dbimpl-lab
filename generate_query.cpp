@@ -3,7 +3,7 @@
 #include <memory>
 #include <vector>
 #include "schema/Schema.hpp"
-#include "schema/Parser.hpp"
+#include "sql/Parser.hpp"
 #include "schema/Types.hpp"
 #include "codegen/TableScanOperator.hpp"
 #include "codegen/PrintOperator.hpp"
