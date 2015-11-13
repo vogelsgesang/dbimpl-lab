@@ -119,8 +119,8 @@ auto generateIndexDelete(std::ostream& out, const TableDescription& table,
 
 void Schema::generateCppCode(std::ostream& out) {
   out <<
-    "#ifndef H_Schema\n"
-    "#define H_Schema\n"
+    "#ifndef H_GeneratedSchema\n"
+    "#define H_GeneratedSchema\n"
     "#include <vector>\n"
     "#include <map>\n"
     "#include <unordered_map>\n"

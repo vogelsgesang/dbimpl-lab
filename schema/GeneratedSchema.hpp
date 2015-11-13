@@ -1,5 +1,5 @@
-#ifndef H_Schema
-#define H_Schema
+#ifndef H_GeneratedSchema
+#define H_GeneratedSchema
 #include <vector>
 #include <map>
 #include <unordered_map>
