@@ -37,8 +37,8 @@ class Parser {
     int lineno;
 
     void skipWhitespace();
-    std::experimental::optional<std::string> getNextToken();
-    std::string expectToken();
+    std::experimental::optional<std::string> getNextToken(bool casesensitive = false);
+    std::string expectToken(bool casesensitive = false);
     void expectToken(const char* expected);
     static bool isIdentifier(std::string token);
     std::string parseIdentifier();

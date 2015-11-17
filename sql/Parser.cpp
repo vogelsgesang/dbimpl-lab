@@ -11,7 +11,7 @@ void Parser::skipWhitespace() {
   }
 }
 //-------------------------------------------------------------------
-optional<string> Parser::getNextToken() {
+optional<string> Parser::getNextToken(bool casesensitive) {
   const auto seperators = string{" \t\n,)(;\""};
   skipWhitespace();
   //parse the actual token
@@ -34,13 +34,15 @@ optional<string> Parser::getNextToken() {
         nextChar = in->peek();
       }
     }
-    std::transform(token.begin(), token.end(), token.begin(), ::tolower);
+    if(!casesensitive) {
+      std::transform(token.begin(), token.end(), token.begin(), ::tolower);
+    }
   }
   return token;
 }
 //-------------------------------------------------------------------
-string Parser::expectToken() {
-  auto token = getNextToken();
+string Parser::expectToken(bool casesensitive) {
+  auto token = getNextToken(casesensitive);
   if(!token) {
     throw ParserError(lineno, "Unexpected end of stream");
   }
@@ -225,14 +227,15 @@ void Parser::parseWhereConditions(ast::Query* queryAst) {
       throw ParserError(lineno, string{"Expected an identifier; found: \""} + firstAttrName + "\"");
     }
     expectToken("=");
-    auto rhs = expectToken();
+    auto rhs = expectToken(true);
     if(rhs.find_first_not_of("0123456789") == string::npos){
       queryAst->filterPredicates.push_back(make_pair(firstAttrName, static_cast<uint64_t>(std::stoll(rhs))));
+    } else if(rhs[0] == '\'' && rhs.size() >= 2 && rhs[rhs.size()-1] == '\''){
+      queryAst->filterPredicates.push_back(make_pair(firstAttrName, rhs.substr(1, rhs.size()-2)));
     } else if(isIdentifier(rhs)) {
       queryAst->joinPredicates.push_back(make_pair(firstAttrName, rhs));
     } else  {
       throw ParserError(lineno, string{"Expected an identifier or a number; found: \""} + firstAttrName + "\"");
-      //TODO: try to parse it as string or number
     }
     lastToken = expectToken();
   } while(lastToken == "and");

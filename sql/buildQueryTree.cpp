@@ -11,7 +11,7 @@ using namespace std;
 
 static unique_ptr<QueryOperator> addFilters(
     unique_ptr<TableScanOperator>&& op,
-    const std::vector<const std::pair<string, uint64_t>*>& predicates);
+    const std::vector<const std::pair<string, boost::variant<uint64_t, std::string>>*>& predicates);
 
 unique_ptr<QueryOperator> buildQueryTree(const ast::Query& query, const Schema& schema) {
   //maps table names to table descriptions
@@ -35,7 +35,7 @@ unique_ptr<QueryOperator> buildQueryTree(const ast::Query& query, const Schema& 
     }
   }
   //map filter predicates to corresponding table scans
-  auto filterPredicatesByTable = unordered_map<string, std::vector<const std::pair<string, uint64_t>*>>{};
+  auto filterPredicatesByTable = unordered_map<string, std::vector<const std::pair<string, boost::variant<uint64_t, std::string>>*>>{};
   for(const auto& filterPred : query.filterPredicates) {
     auto tableNameIter = knownColumnNames.find(filterPred.first);
     if(tableNameIter == knownColumnNames.end()) {
@@ -106,7 +106,7 @@ unique_ptr<QueryOperator> buildQueryTree(const ast::Query& query, const Schema& 
 
 static unique_ptr<QueryOperator> addFilters(
     unique_ptr<TableScanOperator>&& op,
-    const std::vector<const std::pair<string, uint64_t>*>& predicates)
+    const std::vector<const std::pair<string, boost::variant<uint64_t, std::string>>*>& predicates)
 {
   auto tableScanPtr = op.get();
   auto treeRoot = unique_ptr<QueryOperator>{std::move(op)};
