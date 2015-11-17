@@ -226,11 +226,11 @@ void Parser::parseWhereConditions(ast::Query* queryAst) {
     }
     expectToken("=");
     auto rhs = expectToken();
-    if(isIdentifier(rhs)) {
-      queryAst->joinPredicates.push_back(make_pair(firstAttrName, rhs));
-    } else if(rhs.find_first_not_of("0123456789") == string::npos){
+    if(rhs.find_first_not_of("0123456789") == string::npos){
       queryAst->filterPredicates.push_back(make_pair(firstAttrName, static_cast<uint64_t>(std::stoll(rhs))));
-    } else {
+    } else if(isIdentifier(rhs)) {
+      queryAst->joinPredicates.push_back(make_pair(firstAttrName, rhs));
+    } else  {
       throw ParserError(lineno, string{"Expected an identifier or a number; found: \""} + firstAttrName + "\"");
       //TODO: try to parse it as string or number
     }

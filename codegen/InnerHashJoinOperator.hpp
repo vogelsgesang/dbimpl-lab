@@ -18,6 +18,10 @@ class InnerHashJoinOperator : public QueryOperator {
       this->right->setParent(this);
     }
 
+    InnerHashJoinOperator(std::unique_ptr<QueryOperator> left,
+                          std::unique_ptr<QueryOperator> right)
+    : InnerHashJoinOperator({}, std::move(left), std::move(right)) {}
+
     virtual void produce(std::ostream& out, IUSet& requiredIUs) override;
     virtual void consume(std::ostream& out, const QueryOperator& sourceOp) override;
     virtual IUSet getProduced() const override;
@@ -27,6 +31,7 @@ class InnerHashJoinOperator : public QueryOperator {
     static uint64_t nextVarnameId;
     std::unique_ptr<QueryOperator> left, right;
     IUSet leftRequiredIUs;
+  public:
     std::vector<std::pair<const InformationUnit*, const InformationUnit*>> joinColumns;
 };
 

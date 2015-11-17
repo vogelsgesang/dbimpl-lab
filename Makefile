@@ -51,38 +51,41 @@ clean:
 GENERATE_SCHEMA_OBJS=generate_schema.o schema/Types.o schema/Schema.o sql/Parser.o
 bin/generate_schema$(BIN_SUFFIX): $(addprefix $(OBJ_DIR)/, $(GENERATE_SCHEMA_OBJS))
 	@mkdir -p $(dir $@)
-	$(CXX) $(LDFLAGS) $(filter-out tests, $^) $(LDLIBS) -o $@
+	$(CXX) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
 TPCC_OBJS=tpcc.o schema/Types.o queries/neworderrandom.o queries/neworder.o queries/delivery.o
 bin/tpcc$(BIN_SUFFIX): $(addprefix $(OBJ_DIR)/, $(TPCC_OBJS))
 	@mkdir -p $(dir $@)
-	$(CXX) $(LDFLAGS) $(filter-out tests, $^) $(LDLIBS) -o $@
+	$(CXX) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
 OLAP_OBJS=olap.o schema/Types.o sql/Parser.o queries/bsum.o
 bin/olap$(BIN_SUFFIX): $(addprefix $(OBJ_DIR)/, $(OLAP_OBJS))
 	@mkdir -p $(dir $@)
-	$(CXX) $(LDFLAGS) $(filter-out tests, $^) $(LDLIBS) -o $@
+	$(CXX) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
 TPCC_OLAP_OBJS=tpcc_olap.o schema/Types.o sql/Parser.o queries/neworderrandom.o queries/neworder.o queries/delivery.o queries/bsum.o
 bin/tpcc_olap$(BIN_SUFFIX): $(addprefix $(OBJ_DIR)/, $(TPCC_OLAP_OBJS))
 	@mkdir -p $(dir $@)
-	$(CXX) $(LDFLAGS) $(filter-out tests, $^) $(LDLIBS) -o $@
+	$(CXX) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
 GENERATE_QUERY_OBJS=generate_query.o schema/Types.o schema/Schema.o sql/Parser.o codegen/PrintOperator.o codegen/TableScanOperator.o \
 									codegen/SelectionOperator.o codegen/InnerHashJoinOperator.o
 bin/generate_query$(BIN_SUFFIX): $(addprefix $(OBJ_DIR)/, $(GENERATE_QUERY_OBJS))
 	@mkdir -p $(dir $@)
-	$(CXX) $(LDFLAGS) $(filter-out tests, $^) $(LDLIBS) -o $@
+	$(CXX) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
 EXECUTE_QUERY_OBJS=execute_query.o schema/Types.o
 bin/execute_query$(BIN_SUFFIX): $(addprefix $(OBJ_DIR)/, $(EXECUTE_QUERY_OBJS))
 	@mkdir -p $(dir $@)
-	$(CXX) $(LDFLAGS) $(filter-out tests, $^) $(LDLIBS) -o $@
+	$(CXX) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
-CLI_OBJS=cli.o schema/Types.o sql/Parser.o
+CLI_OBJS=cli.o sql/Parser.o sql/buildQueryTree.o codegen/PrintOperator.o codegen/TableScanOperator.o \
+				 codegen/SelectionOperator.o codegen/InnerHashJoinOperator.o schema/Types.o schema/Schema.o
+bin/cli$(BIN_SUFFIX): LDLIBS+= -ldl
+bin/cli$(BIN_SUFFIX): LDFLAGS += -rdynamic
 bin/cli$(BIN_SUFFIX): $(addprefix $(OBJ_DIR)/, $(CLI_OBJS))
 	@mkdir -p $(dir $@)
-	$(CXX) $(LDFLAGS) $(filter-out tests, $^) $(LDLIBS) -o $@
+	$(CXX) $(LDFLAGS) $^ $(LDLIBS) -o $@
 
 
 RUNTESTS_OBJS=gtest_main.a $(patsubst %.cpp, %.o, $(shell find tests/ -iname *Test.cpp -type f)) \

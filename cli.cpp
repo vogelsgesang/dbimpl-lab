@@ -3,11 +3,16 @@
 #include <fstream>
 #include <memory>
 #include <ctime>
+#include <cstdlib>
+#include <dlfcn.h>
 #include "schema/GeneratedSchema.hpp"
 #include "schema/Types.hpp"
 #include "sql/Parser.hpp"
+#include "sql/buildQueryTree.hpp"
 
 using namespace std;
+
+void executeQuery(QueryOperator& query, table_data* tables);
 
 int main() {
   auto tables = std::make_unique<table_data>();
@@ -40,6 +45,14 @@ int main() {
   }
 
   Parser parser;
+  std::unique_ptr<Schema> schema;
+  try {
+    schema = parser.parseSqlSchema(std::ifstream{"data/schema.sql"});
+  } catch(ParserError& e) {
+    cout << "ERROR: " << e.what() << endl;
+    return -1;
+  }
+
   while(std::cin.good()) {
     std::cout << "> ";
     std::string line;
@@ -48,9 +61,55 @@ int main() {
     //parse the query
     try {
       auto queryAst = parser.parseQuery(std::istringstream(line));
+      auto queryPlan = buildQueryTree(*queryAst, *schema);
+      executeQuery(*queryPlan, tables.get());
     } catch(ParserError& e) {
       std::cout << "ParserError: " << e.what() << std::endl;
       continue;
+    } catch(std::string& e) {
+      std::cout << "Error: " << e << std::endl;
+    } catch(const char* e) {
+      std::cout << "Error: " << e << std::endl;
     }
   }
+}
+
+void executeQuery(QueryOperator& query, table_data* tables) {
+  //generate the C++ code
+  {
+    std::ofstream out ("generated/cli_query.cpp", ios_base::trunc);
+    out << "#include <unordered_map>\n"
+           "#include <iostream>\n"
+           "#include \"schema/Types.hpp\"\n"
+           "#include \"schema/GeneratedSchema.hpp\"\n"
+           "extern \"C\" void query(table_data* tables) {";
+    auto noRequiredCols = IUSet{};
+    query.produce(out, noRequiredCols);
+    out << "}";
+    out.flush();
+  }
+  //compile it
+  clock_t start_time = clock();
+  if(system("g++ -O3 -std=c++14 -shared -fPIC generated/cli_query.cpp -I. -o generated/cli_query.so") != 0) {
+    throw "compilation failed";
+  }
+  clock_t end_time = clock();
+  double compilation_time = double(end_time - start_time) / CLOCKS_PER_SEC;
+  //load the library
+  void* handle = dlopen("generated/cli_query.so",RTLD_NOW);
+  if (!handle) throw string{"unable to load .so: "} + dlerror();
+  //execute the function
+  auto fn = reinterpret_cast<void (*)(table_data*)>(dlsym(handle, "query"));
+  if (!fn) {
+    dlclose(handle);
+    throw string{"query function not found"};
+  }
+  start_time = clock();
+  fn(tables);
+  end_time = clock();
+  double execution_time = double(end_time - start_time) / CLOCKS_PER_SEC;
+  //unload the function
+  if (dlclose(handle)) throw string{"unable to unload .so: "} + dlerror();
+  std::cout << "Compilation time: " << compilation_time << "s" << std::endl;
+  std::cout << "Execution time: " << execution_time << "s" << std::endl;
 }

@@ -3,6 +3,8 @@
 
 #include <string>
 #include <vector>
+#include <memory>
+#include "schema/Schema.hpp"
 
 namespace ast {
 
