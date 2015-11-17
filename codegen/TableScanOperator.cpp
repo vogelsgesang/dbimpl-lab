@@ -2,8 +2,11 @@
 
 
 void TableScanOperator::produce(std::ostream& out, IUSet& requiredIUs) {
+  std::string sizeColumn;
+  if(requiredIUs.size()) sizeColumn = iuColumnNames.at(*requiredIUs.begin());
+  else sizeColumn = tableDesc.columns.front().name;
   out << "for(size_t tid = 0; tid < tables->" << tableDesc.name
-      << ".col_" << iuColumnNames.at(*requiredIUs.begin()) << ".size(); tid++) {";
+      << ".col_" << sizeColumn << ".size(); tid++) {";
   for(const auto& iu : requiredIUs) {
     out << "auto& " << iu->getVarname() << " = tables->" << tableDesc.name
         << ".col_" << iuColumnNames.at(iu) << "[tid];";
