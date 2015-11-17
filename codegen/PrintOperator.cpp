@@ -7,6 +7,7 @@ void PrintOperator::produce(std::ostream& out, IUSet& requiredIUs) {
     requiredIUsCopy.insert(iu);
   }
   child->produce(out, requiredIUsCopy);
+  out << "std::cout << std::flush;";
 }
 
 void PrintOperator::consume(std::ostream& out, const QueryOperator&) {
@@ -14,7 +15,7 @@ void PrintOperator::consume(std::ostream& out, const QueryOperator&) {
   generateList(out, printedColumns, [](auto& out, auto& col) {
     out << " << " << col->getVarname();
   }, " << \"\\t|\\t\"");
-  out << "<< std::endl;";
+  out << "<< \"\\n\";";
   if(parent) parent->consume(out, *this);
 }
 
