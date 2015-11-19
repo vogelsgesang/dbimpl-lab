@@ -2,7 +2,7 @@
 #include <sstream>
 #include <fstream>
 #include <memory>
-#include <ctime>
+#include <chrono>
 #include <cstdlib>
 #include <dlfcn.h>
 #include "schema/GeneratedSchema.hpp"
@@ -89,12 +89,12 @@ void executeQuery(QueryOperator& query, table_data* tables) {
     out.flush();
   }
   //compile it
-  clock_t start_time = clock();
+  auto start_time = std::chrono::high_resolution_clock::now();
   if(system("g++ -O3 -std=c++14 -shared -fPIC generated/cli_query.cpp -I. -o generated/cli_query.so") != 0) {
     throw "compilation failed";
   }
-  clock_t end_time = clock();
-  double compilation_time = double(end_time - start_time) / CLOCKS_PER_SEC;
+  auto end_time = std::chrono::high_resolution_clock::now();
+  auto compilation_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_time-start_time).count();
   //load the library
   void* handle = dlopen("generated/cli_query.so",RTLD_NOW);
   if (!handle) throw string{"unable to load .so: "} + dlerror();
@@ -104,12 +104,12 @@ void executeQuery(QueryOperator& query, table_data* tables) {
     dlclose(handle);
     throw string{"query function not found"};
   }
-  start_time = clock();
+  start_time = std::chrono::high_resolution_clock::now();
   fn(tables);
-  end_time = clock();
-  double execution_time = double(end_time - start_time) / CLOCKS_PER_SEC;
-  //unload the function
+  end_time = std::chrono::high_resolution_clock::now();
+  auto execution_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_time-start_time).count();
+  //unload the library
   if (dlclose(handle)) throw string{"unable to unload .so: "} + dlerror();
-  std::cout << "Compilation time: " << compilation_time << "s" << std::endl;
-  std::cout << "Execution time: " << execution_time << "s" << std::endl;
+  std::cout << "Compilation time: " << compilation_time << "ms" << std::endl;
+  std::cout << "Execution time: " << execution_time << "ms" << std::endl;
 }
