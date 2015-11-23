@@ -5,6 +5,7 @@
 #include <chrono>
 #include <cstdlib>
 #include <dlfcn.h>
+#include <tbb/task_scheduler_init.h>
 #include "schema/GeneratedSchema.hpp"
 #include "schema/Types.hpp"
 #include "sql/Parser.hpp"
@@ -12,12 +13,20 @@
 
 using namespace std;
 
-void executeQuery(QueryOperator& query, table_data* tables);
+void executeQuery(QueryOperator& query, table_data* tables, bool parallel);
 
-int main() {
+int main(int argc, char** argv) {
+  auto parallel = false;
+  unique_ptr<tbb::task_scheduler_init> scheduler;
+  if(argc == 2) {
+    auto threadCnt = atoi(argv[1]);
+    scheduler = make_unique<tbb::task_scheduler_init>(threadCnt);
+    std::cout << "using " << threadCnt << " threads" << std::endl;
+    parallel = true;
+  }
+  //load all the tables from disk
   auto tables = std::make_unique<table_data>();
   try {
-    //load all the tables from disk
     std::cout << "loading data tables" << std::endl;
     auto data_folder = std::string{"data/"};
     tables->warehouse.loadFromTbl(std::ifstream((data_folder + "tpcc_warehouse.tbl").c_str()));
@@ -62,7 +71,7 @@ int main() {
     try {
       auto queryAst = parser.parseQuery(std::istringstream(line));
       auto queryPlan = buildQueryTree(*queryAst, *schema);
-      executeQuery(*queryPlan, tables.get());
+      executeQuery(*queryPlan, tables.get(), parallel);
     } catch(ParserError& e) {
       std::cout << "ParserError: " << e.what() << std::endl;
       continue;
@@ -74,17 +83,22 @@ int main() {
   }
 }
 
-void executeQuery(QueryOperator& query, table_data* tables) {
+void executeQuery(QueryOperator& query, table_data* tables, bool parallel) {
   //generate the C++ code
   {
     std::ofstream out ("generated/cli_query.cpp", ios_base::trunc);
     out << "#include <unordered_map>\n"
            "#include <iostream>\n"
            "#include \"schema/Types.hpp\"\n"
-           "#include \"schema/GeneratedSchema.hpp\"\n"
-           "extern \"C\" void query(table_data* tables) {";
+           "#include \"schema/GeneratedSchema.hpp\"\n";
+    if(parallel) {
+      out << "#include <tbb/parallel_for.h>\n"
+             "#include <tbb/blocked_range.h>\n"
+             "#include <tbb/concurrent_unordered_map.h>\n";
+    }
+    out << "extern \"C\" void query(table_data* tables) {";
     auto noRequiredCols = IUSet{};
-    query.produce(out, noRequiredCols);
+    query.produce(out, noRequiredCols, parallel);
     out << "}";
     out.flush();
   }
@@ -94,7 +108,7 @@ void executeQuery(QueryOperator& query, table_data* tables) {
     throw "compilation failed";
   }
   auto end_time = std::chrono::high_resolution_clock::now();
-  auto compilation_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_time-start_time).count();
+  auto compilation_time = std::chrono::duration_cast<std::chrono::microseconds>(end_time-start_time).count();
   //load the library
   void* handle = dlopen("generated/cli_query.so",RTLD_NOW);
   if (!handle) throw string{"unable to load .so: "} + dlerror();
@@ -107,9 +121,9 @@ void executeQuery(QueryOperator& query, table_data* tables) {
   start_time = std::chrono::high_resolution_clock::now();
   fn(tables);
   end_time = std::chrono::high_resolution_clock::now();
-  auto execution_time = std::chrono::duration_cast<std::chrono::milliseconds>(end_time-start_time).count();
+  auto execution_time = std::chrono::duration_cast<std::chrono::microseconds>(end_time-start_time).count();
   //unload the library
   if (dlclose(handle)) throw string{"unable to unload .so: "} + dlerror();
-  std::cout << "Compilation time: " << compilation_time << "ms" << std::endl;
-  std::cout << "Execution time: " << execution_time << "ms" << std::endl;
+  std::cout << "Compilation time: " << compilation_time << " microseconds" << std::endl;
+  std::cout << "Execution time: " << execution_time << " microseconds" << std::endl;
 }

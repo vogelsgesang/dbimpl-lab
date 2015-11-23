@@ -2,13 +2,13 @@
 #include <boost/variant/get.hpp>
 
 
-void SelectionOperator::produce(std::ostream& out, IUSet& requiredIUs) {
+void SelectionOperator::produce(std::ostream& out, IUSet& requiredIUs, bool parallel) {
   auto requiredIUsCopy = requiredIUs;
   requiredIUsCopy.insert(column);
-  child->produce(out, requiredIUsCopy);
+  child->produce(out, requiredIUsCopy, parallel);
 }
 
-void SelectionOperator::consume(std::ostream& out, const QueryOperator&) {
+void SelectionOperator::consume(std::ostream& out, const QueryOperator&, bool parallel) {
   out << "if(" << column->getVarname() << " == ";
   switch(value.which()) {
     case 0:
@@ -27,7 +27,7 @@ void SelectionOperator::consume(std::ostream& out, const QueryOperator&) {
     default: throw "unexpected value type";
   }
   out << ") {";
-  parent->consume(out, *this);
+  parent->consume(out, *this, parallel);
   out << "}";
 }
 

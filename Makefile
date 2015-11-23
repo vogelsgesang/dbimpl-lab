@@ -81,7 +81,7 @@ bin/execute_query$(BIN_SUFFIX): $(addprefix $(OBJ_DIR)/, $(EXECUTE_QUERY_OBJS))
 
 CLI_OBJS=cli.o sql/Parser.o sql/buildQueryTree.o codegen/PrintOperator.o codegen/TableScanOperator.o \
 				 codegen/SelectionOperator.o codegen/InnerHashJoinOperator.o schema/Types.o schema/Schema.o
-bin/cli$(BIN_SUFFIX): LDLIBS+= -ldl
+bin/cli$(BIN_SUFFIX): LDLIBS+= -ldl -ltbb
 bin/cli$(BIN_SUFFIX): LDFLAGS += -rdynamic
 bin/cli$(BIN_SUFFIX): $(addprefix $(OBJ_DIR)/, $(CLI_OBJS))
 	@mkdir -p $(dir $@)

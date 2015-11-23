@@ -10,8 +10,8 @@ class TableScanOperator : public QueryOperator {
     TableScanOperator(const TableDescription& tableDesc)
       : tableDesc(tableDesc) {}
 
-    virtual void produce(std::ostream& out, IUSet& requiredIUs) override;
-    virtual void consume(std::ostream& out, const QueryOperator& sourceOp) override;
+    virtual void produce(std::ostream& out, IUSet& requiredIUs, bool parallel) override;
+    virtual void consume(std::ostream& out, const QueryOperator& sourceOp, bool parallel) override;
     virtual IUSet getProduced() const override;
 
     const InformationUnit* getColumnIU(const std::string& colName);

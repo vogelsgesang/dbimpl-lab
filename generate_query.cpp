@@ -79,6 +79,6 @@ int main() {
          "#include \"schema/GeneratedSchema.hpp\"\n"
          "void query(table_data* tables) {";
   auto noRequiredCols = IUSet{};
-  queryTree->produce(out, noRequiredCols);
+  queryTree->produce(out, noRequiredCols, false);
   out << "}";
 }

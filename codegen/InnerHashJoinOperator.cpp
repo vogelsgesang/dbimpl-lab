@@ -2,7 +2,7 @@
 #include "utils/generateList.hpp"
 
 
-void InnerHashJoinOperator::produce(std::ostream& out, IUSet& requiredIUs) {
+void InnerHashJoinOperator::produce(std::ostream& out, IUSet& requiredIUs, bool parallel) {
   //figure out which IUs are required from the left subtree
   IUSet leftProduced = left->getProduced();
   leftRequiredIUs.clear();
@@ -12,7 +12,11 @@ void InnerHashJoinOperator::produce(std::ostream& out, IUSet& requiredIUs) {
     }
   }
   //initialize the hashmap
-  out << "std::unordered_multimap<std::tuple<";
+  if(parallel) {
+    out << "tbb::concurrent_unordered_multimap<std::tuple<";
+  } else {
+    out << "std::unordered_multimap<std::tuple<";
+  }
   generateList(out, joinColumns, [](auto& out, auto& cols) {
                 out << cols.first->getType().generateCppCode();
               });
@@ -20,7 +24,15 @@ void InnerHashJoinOperator::produce(std::ostream& out, IUSet& requiredIUs) {
   generateList(out, leftRequiredIUs, [](auto& out, auto& iu) {
     out << iu->getType().generateCppCode();
   });
-  out <<">> ht_" << varnameId << ";";
+  out << ">";
+  if(parallel) {
+    out << ", std::hash<std::tuple<";
+    generateList(out, joinColumns, [](auto& out, auto& cols) {
+                  out << cols.first->getType().generateCppCode();
+                });
+    out << ">>";
+  }
+  out <<"> ht_" << varnameId << ";";
   //add join columns to the sets of required UIs
   auto downwardsLeftRequiredIUs = leftRequiredIUs;
   IUSet downwardsRightRequiredIUs = requiredIUs;
@@ -31,11 +43,11 @@ void InnerHashJoinOperator::produce(std::ostream& out, IUSet& requiredIUs) {
     downwardsLeftRequiredIUs.insert(cols.first);
     downwardsRightRequiredIUs.insert(cols.second);
   }
-  left->produce(out, downwardsLeftRequiredIUs);
-  right->produce(out, downwardsRightRequiredIUs);
+  left->produce(out, downwardsLeftRequiredIUs, parallel);
+  right->produce(out, downwardsRightRequiredIUs, parallel);
 }
 
-void InnerHashJoinOperator::consume(std::ostream& out, const QueryOperator& sourceOp) {
+void InnerHashJoinOperator::consume(std::ostream& out, const QueryOperator& sourceOp, bool parallel) {
   if(&sourceOp == left.get()) {
     out << "ht_" << varnameId << ".insert(std::make_pair(std::make_tuple(";
     generateList(out, joinColumns, [](auto& out, auto& cols) {
@@ -62,7 +74,7 @@ void InnerHashJoinOperator::consume(std::ostream& out, const QueryOperator& sour
           << " = std::get<" << tupleIdx << ">(iter->second);";
       tupleIdx++;
     }
-    parent->consume(out, *this);
+    parent->consume(out, *this, parallel);
     out << "}"
            "}";
   }
